@@ -6,12 +6,29 @@
 //
 
 import SwiftUI
+import FirebaseCore
+
+class AppDelegate: NSObject, UIApplicationDelegate {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+        FirebaseApp.configure()
+        debugPrint("Firebase started")
+        return true
+    }
+}
 
 @main
 struct PlatinumApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
+    @StateObject var dataModel = DataModel()
+    @StateObject var userAuth = Authentication.shared
+    @StateObject var firebaseService = FirebaseService.shared
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(dataModel)
+                .environmentObject(userAuth)
+                .environmentObject(firebaseService)
         }
     }
 }
