@@ -24,7 +24,7 @@ struct SignInView: View {
             } onCompletion: { result in
                 userAuth.handleSignInWithAppleCompletion(result)
                 debugPrint("🦁", "user signed in with apple")
-                firebaseService.getUsers()
+//                firebaseService.getUsers()
             }
             .signInWithAppleButtonStyle(colorScheme == .light ? .black : .white)
             .frame(height: 50)

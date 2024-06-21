@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct StockListView: View {
-    @EnvironmentObject var dataModel: DataModel
+    @EnvironmentObject var portfolioService: PortfolioService
     var key: String
     @StateObject var networkService = NetworkService()
     @State var showingSheet: Bool = false
@@ -16,6 +16,7 @@ struct StockListView: View {
     @State var showSecondView: Bool = false
     @State var item: ItemData = ItemData(symbol: "", basis: 0, price: 0, gainLose: 0, quantity: 0)
     @State var total: Decimal = 0
+    @State var items: [ItemData] = []
     let columns: [GridItem] = [
                                 GridItem(.fixed(60), spacing: 3),
                                 GridItem(.fixed(45), spacing: 3),
@@ -43,7 +44,7 @@ struct StockListView: View {
                         Text("Edit")
                     }
                     .underline()
-                    ForEach(dataModel.items, id: \.id) { item in
+                    ForEach(items, id: \.id) { item in
                         Text("\(item.symbol)")
                         Text("\(item.quantity)")
                         Text("\(item.basis as NSDecimalNumber, formatter: currencyFormatter)")
@@ -85,9 +86,9 @@ struct StockListView: View {
                 }
             }
             Spacer()
-            .navigationBarTitle(key)
+                .navigationBarTitle(key.camelCaseToWords())
             .onAppear {
-                updateValuesForStocks()
+                updateStocks()
             }
             .fullScreenCover(isPresented: $showingSheet, onDismiss: didDismiss) {
                 AddingNewStockView(key: key)
@@ -95,31 +96,39 @@ struct StockListView: View {
         }
     }
     
-    func didDismiss() {
-        updateValuesForStocks()
-    }
-    
-    func updateValuesForStocks() {
+    func updateStocks() {
         Task {
-            var total: Decimal = 0
-            var items = await dataModel.restore(key: key)
-            let array = items.map { $0.symbol }
-            let string: String = array.joined(separator: ",")
-            let data = await networkService.fetch(tickers: string)
-            for item in data {
-                if let row = items.firstIndex(where: { $0.symbol == item.id }) {
-                    items[row].price = Decimal(Double(item.price))
-                    let gainLose = Decimal(items[row].quantity) * (Decimal(Double(item.price)) - items[row].basis)
-                    items[row].gainLose = gainLose
-                    total += gainLose
-                }
-            }
-            await MainActor.run {
-                dataModel.items = items
-                self.total = total
-            }
+            let result = await portfolioService.getPortfolio(listName: key)
+            items = result.0
+            total = result.1
         }
     }
+    
+    func didDismiss() {
+        updateStocks()
+    }
+    
+//    func updateValuesForStocks() {
+//        Task {
+//            var total: Decimal = 0
+//            var items = await dataModel.restore(key: key)
+//            let array = items.map { $0.symbol }
+//            let string: String = array.joined(separator: ",")
+//            let data = await networkService.fetch(tickers: string)
+//            for item in data {
+//                if let row = items.firstIndex(where: { $0.symbol == item.id }) {
+//                    items[row].price = Decimal(Double(item.price))
+//                    let gainLose = Decimal(items[row].quantity) * (Decimal(Double(item.price)) - items[row].basis)
+//                    items[row].gainLose = gainLose
+//                    total += gainLose
+//                }
+//            }
+//            await MainActor.run {
+//                dataModel.items = items
+//                self.total = total
+//            }
+//        }
+//    }
     
 }
 

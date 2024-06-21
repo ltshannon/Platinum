@@ -176,8 +176,6 @@ class Authentication: ObservableObject {
                             self.firebaseUserId = self.user?.uid ?? ""
                             self.username = appleIDCredential.user
                             self.email = appleIDCredential.email ?? ""
-                            let firebaseService = FirebaseService.shared
-                            firebaseService.getUsers()
                         }
                     }
                     catch {

@@ -20,6 +20,16 @@ struct UserInformation: Codable, Identifiable, Hashable {
     var fcm: String?
 }
 
+struct StockItem: Codable, Identifiable, Hashable {
+    @DocumentID var id: String?
+}
+
+struct PortfolioItem: Codable, Identifiable, Hashable {
+    @DocumentID var id: String?
+    var quantity: Int
+    var basis: Decimal
+}
+
 enum ListItemType: String {
     case currentItems = "currentItems"
     case defaultItems = "defaultItems"
@@ -64,7 +74,7 @@ extension MoreLists {
 class FirebaseService: ObservableObject {
     static let shared = FirebaseService()
     @AppStorage("profile-url") var profileURL: String = ""
-    @Published var users: [UserInformation] = []
+    @Published var portfolio: [PortfolioItem] = []
     @Published var sharingUsers: [UserInformation] = []
     @Published var moreLists: MoreLists = MoreLists()
     var moreListsListener: ListenerRegistration?
@@ -84,40 +94,112 @@ class FirebaseService: ObservableObject {
                ]
         do {
             try await database.collection("users").document(user.uid).updateData(data)
-            debugPrint(String.bell, "users: moreLists successfully written!")
+            debugPrint(String.bell, "users successfully written!")
         } catch {
             debugPrint(String.fatal, "users: Error writing moreLists: \(error)")
             return
         }
     }
     
-    func getUsers() {
-        
-        let listener = database.collection("users").addSnapshotListener { querySnapshot, error in
-
-            guard let documents = querySnapshot?.documents else {
-                debugPrint("🧨", "Users no documents")
-                return
-            }
-            
-            var items: [UserInformation] = []
-            for document in documents {
-                do {
-                    let user = try document.data(as: UserInformation.self)
-                    items.append(user)
-                }
-                catch {
-                    debugPrint("🧨", "\(error.localizedDescription)")
-                }
-            }
-            DispatchQueue.main.async {
-                self.users = items
-            }
-
+    func getPortfolioList(stockList: [String], listName: String) async -> [PortfolioItem] {
+        guard let user = Auth.auth().currentUser else {
+            return []
         }
-        userListener = listener
+        
+        var portfolioItems: [PortfolioItem] = []
+        for item in stockList {
+            do {
+                let querySnapshot = try await database.collection("users").document(user.uid).collection(listName).document(item).getDocument()
+                if querySnapshot.exists {
+                    let data = try querySnapshot.data(as: PortfolioItem.self)
+                    portfolioItems.append(data)
+                }
+            }
+            catch {
+                debugPrint("🧨", "Error reading stock items: \(error.localizedDescription)")
+            }
+        }
+        return portfolioItems
     }
     
+    func getStockList(listName: String) async -> [String] {
+        var items: [String] = []
+        
+        guard let user = Auth.auth().currentUser else {
+            return []
+        }
+        do {
+            let querySnapshot = try await database.collection("users").document(user.uid).collection(listName).getDocuments()
+            
+            for document in querySnapshot.documents {
+                let item = try document.data(as: StockItem.self)
+                if let symbol = item.id {
+                    if symbol.count <= 4 {
+                        items.append(symbol)
+                    }
+                }
+            }
+        }
+        catch {
+            debugPrint("🧨", "Error reading getStockList: \(error.localizedDescription)")
+        }
+        return items
+
+    }
+    
+    func addItem(listName: String, symbol: String, quantity: Int, basis: Decimal) async {
+        guard let user = Auth.auth().currentUser else {
+            return
+        }
+        
+        let temp = NSDecimalNumber(decimal: basis)
+        let value = [
+            "quantity": quantity,
+            "basis": temp
+        ] as [String : Any]
+        do {
+            try await database.collection("users").document(user.uid).collection(listName).document(symbol).setData(value)
+        } catch {
+            debugPrint(String.boom, "addItem: \(error)")
+        }
+    }
+    
+    func updateItem(listName: String, symbol: String, quantity: Int, basis: String) async {
+        guard let user = Auth.auth().currentUser else {
+            return
+        }
+        
+        var item = basis
+        if item.contains("$") {
+            item = String(basis.dropFirst())
+        }
+        let dec = Decimal(string: item) ?? 0
+        debugPrint("dec: \(dec)")
+        let temp = NSDecimalNumber(decimal:  dec)
+        let value = [
+            "quantity": quantity,
+            "basis": temp
+        ] as [String : Any]
+        do {
+            try await database.collection("users").document(user.uid).collection(listName).document(symbol).updateData(value)
+        } catch {
+            debugPrint(String.boom, "updateItem: \(error)")
+        }
+    }
+    
+    func deleteItem(listName: String, symbol: String) async  {
+        guard let user = Auth.auth().currentUser else {
+            return
+        }
+        
+        do {
+          try await database.collection("users").document(user.uid).collection(listName).document(symbol).delete()
+        } catch {
+            debugPrint(String.boom, "deleteItem: \(error)")
+        }
+    }
+
+/*
     func getMoreLists(docID: String, collectionName: String) {
         
         let moreLists = database.collection(collectionName).document(docID).addSnapshotListener { documentSnapshot, error in
@@ -188,7 +270,7 @@ class FirebaseService: ObservableObject {
         }
 
     }
-    
+*/
     func updateAddFCMToUser(token: String) async {
         guard let currentUid = Auth.auth().currentUser?.uid else { return }
         
@@ -204,7 +286,7 @@ class FirebaseService: ObservableObject {
         }
         
     }
-    
+
     func updateAddUserProfileImage(url: String) async {
         guard let currentUid = Auth.auth().currentUser?.uid else { return }
         
@@ -217,16 +299,7 @@ class FirebaseService: ObservableObject {
             debugPrint(String.boom, "updateAddUserProfileImage: \(error)")
         }
     }
-    
-    func findUserFrom(id: String) -> UserInformation? {
-        for item in users {
-            if let userId = item.id, userId == id {
-                return item
-            }
-        }
-        return nil
-    }
-    
+/*
     func restoreDefault(items: [String]) async {
         guard let currentUid = Auth.auth().currentUser?.uid else { return }
         
@@ -356,5 +429,6 @@ class FirebaseService: ObservableObject {
             
         }
     }
-    
+*/
+
 }

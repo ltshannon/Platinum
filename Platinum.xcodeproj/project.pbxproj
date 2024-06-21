@@ -30,6 +30,7 @@
 		B136CA392C23AA2B00A23278 /* FirebaseInAppMessagingSwift-Beta in Frameworks */ = {isa = PBXBuildFile; productRef = B136CA382C23AA2B00A23278 /* FirebaseInAppMessagingSwift-Beta */; };
 		B136CA3B2C23AA2B00A23278 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = B136CA3A2C23AA2B00A23278 /* FirebaseMessaging */; };
 		B136CA3D2C23AA2B00A23278 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = B136CA3C2C23AA2B00A23278 /* FirebaseStorage */; };
+		B136CA412C24FC3400A23278 /* PortfolioService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B136CA402C24FC3400A23278 /* PortfolioService.swift */; };
 		B16019E92C1A90AF00D4B1B7 /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = B16019E82C1A90AF00D4B1B7 /* SwiftSoup */; };
 		B16019EB2C1A90DF00D4B1B7 /* SwiftSoupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B16019EA2C1A90DF00D4B1B7 /* SwiftSoupService.swift */; };
 		B1FD8AD92C1A5C89000D0F37 /* PlatinumApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1FD8AD82C1A5C89000D0F37 /* PlatinumApp.swift */; };
@@ -53,6 +54,7 @@
 		B136CA232C23A83D00A23278 /* ProfileView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		B136CA252C23A86500A23278 /* ButtonStyles.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ButtonStyles.swift; sourceTree = "<group>"; };
 		B136CA272C23A93700A23278 /* StorageService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StorageService.swift; sourceTree = "<group>"; };
+		B136CA402C24FC3400A23278 /* PortfolioService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortfolioService.swift; sourceTree = "<group>"; };
 		B16019EA2C1A90DF00D4B1B7 /* SwiftSoupService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftSoupService.swift; sourceTree = "<group>"; };
 		B1FD8AD52C1A5C89000D0F37 /* Platinum.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Platinum.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B1FD8AD82C1A5C89000D0F37 /* PlatinumApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatinumApp.swift; sourceTree = "<group>"; };
@@ -94,6 +96,7 @@
 				B1FD8AE72C1A5CFD000D0F37 /* NetworkService.swift */,
 				B136CA272C23A93700A23278 /* StorageService.swift */,
 				B16019EA2C1A90DF00D4B1B7 /* SwiftSoupService.swift */,
+				B136CA402C24FC3400A23278 /* PortfolioService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -246,6 +249,7 @@
 				B136CA042C1E692700A23278 /* StockListView.swift in Sources */,
 				B136CA1A2C23841B00A23278 /* Authentication.swift in Sources */,
 				B136CA242C23A83D00A23278 /* ProfileView.swift in Sources */,
+				B136CA412C24FC3400A23278 /* PortfolioService.swift in Sources */,
 				B136CA262C23A86500A23278 /* ButtonStyles.swift in Sources */,
 				B136CA222C23A82D00A23278 /* SettingsView.swift in Sources */,
 			);

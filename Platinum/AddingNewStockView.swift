@@ -9,6 +9,7 @@ import SwiftUI
 
 struct AddingNewStockView: View {
     @EnvironmentObject var dataModel: DataModel
+    @EnvironmentObject var portfolioService: PortfolioService
     @Environment(\.dismiss) var dismiss
     var key: String
     @State var symbol: String = ""
@@ -88,8 +89,10 @@ struct AddingNewStockView: View {
     
     func add() {
         let item = ItemData(symbol: symbol, basis: Decimal(string: basis) ?? 0, price: 0, gainLose: 0, quantity: Int(quantity) ?? 0)
-        dataModel.save(key: key, item: item)
-        dismiss()
+        Task {
+            await portfolioService.addStock(listName: key, item: item)
+            dismiss()
+        }
     }
 }
 

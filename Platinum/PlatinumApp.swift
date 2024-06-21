@@ -20,6 +20,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 struct PlatinumApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     @StateObject var dataModel = DataModel()
+    @StateObject var portfolioService = PortfolioService()
     @StateObject var userAuth = Authentication.shared
     @StateObject var firebaseService = FirebaseService.shared
     
@@ -29,6 +30,7 @@ struct PlatinumApp: App {
                 .environmentObject(dataModel)
                 .environmentObject(userAuth)
                 .environmentObject(firebaseService)
+                .environmentObject(portfolioService)
         }
     }
 }

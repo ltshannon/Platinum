@@ -9,31 +9,31 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject var dataModel: DataModel
-    @StateObject var networkService = NetworkService()
-    @StateObject var swiftSoupService = SwiftSoupService()
     @EnvironmentObject var userAuth: Authentication
     @EnvironmentObject var firebaseService: FirebaseService
+    @StateObject var networkService = NetworkService()
+    @StateObject var swiftSoupService = SwiftSoupService()
     @State private var showSignIn: Bool = false
     @State var userId = ""
     
     var body: some View {
         TabView {
-            StockListView(key: "Elite Dividend Payers")
+            StockListView(key: "EliteDividendPayers")
                 .tabItem {
                     Label("Elite", systemImage: "rectangle.grid.2x2")
                 }
                 .tag(1)
-            StockListView(key: "Growth Investor")
+            StockListView(key: "GrowthInvestor")
                 .tabItem {
                     Label("Growth", systemImage: "rectangle.grid.2x2")
                 }
                 .tag(2)
-            StockListView(key: "Breakthrough Stocks")
+            StockListView(key: "BreakthroughStocks")
                 .tabItem {
                     Label("Breakthrough", systemImage: "rectangle.grid.2x2")
                 }
                 .tag(3)
-            StockListView(key: "Accelerated Profits")
+            StockListView(key: "AcceleratedProfits")
                 .tabItem {
                     Label("Accelerated", systemImage: "rectangle.grid.2x2")
                 }
@@ -61,9 +61,9 @@ struct ContentView: View {
                 Task {
                     await firebaseService.updateAddFCMToUser(token: userAuth.fcmToken)
                 }
-                if userAuth.loginType == .apple {
-                    firebaseService.getUsers()
-                }
+//                if userAuth.loginType == .apple {
+//                    firebaseService.getUsers()
+//                }
             }
         }
         .fullScreenCover(isPresented: $showSignIn) {

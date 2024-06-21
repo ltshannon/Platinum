@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct StockDetailView: View {
-    @EnvironmentObject var dataModel: DataModel
+    @EnvironmentObject var portfolioService: PortfolioService
     @Environment(\.dismiss) private var dismiss
     var key: String
     var item: ItemData
@@ -65,11 +65,15 @@ struct StockDetailView: View {
                 Section {
                     TextField("Basis", text: $basis)
                         .onChange(of: basis) { oldValue, newValue in
-                            if newValue.isEmpty {
+                            var item = newValue
+                            if item.contains("$") {
+                                item = String(newValue.dropFirst())
+                            }
+                            if item.count == 0 {
                                 basis = ""
                                 return
                             }
-                            if decimalFormat(stringNumber: newValue) == nil {
+                            if decimalFormat(stringNumber: item) == nil {
                                 showAlert = true
                                 showAlertMessage = "Invalid basis value"
                                 basis = oldValue
@@ -124,25 +128,16 @@ struct StockDetailView: View {
             showAlert = true
             return
         }
+        
         Task {
-            var values = await dataModel.restore(key: key)
-            if let row = values.firstIndex(where: { $0.symbol == item.symbol }) {
-                if let value = decimalFormat(stringNumber: basis) {
-                    values[row].basis = value
-                }
-                dataModel.saveToStorage(key: key, item: values)
-            }
+            await portfolioService.updateStock(listName: key, symbol: symbol, quantity: Int(quantity) ?? 0, basis: basis)
             dismiss()
         }
     }
     
     func delete() {
         Task {
-            var values = await dataModel.restore(key: "eliteDividendPayers")
-            if let row = values.firstIndex(where: { $0.symbol == item.symbol }) {
-                values.remove(at: row)
-                dataModel.saveToStorage(key: "eliteDividendPayers", item: values)
-            }
+            await portfolioService.deleteStock(listName: key, symbol: symbol)
             dismiss()
         }
     }

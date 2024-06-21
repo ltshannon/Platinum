@@ -81,9 +81,7 @@ struct ProfileView: View {
         }
         .onAppear {
             if let user = userAuth.user {
-                let userId = user.uid
-                self.user = firebaseService.findUserFrom(id: userId)
-                if let url = userAuth.user?.photoURL {
+                if let url = user.photoURL {
                     profileURL = url.absoluteString
                 }
             }
