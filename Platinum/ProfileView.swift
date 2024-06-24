@@ -16,7 +16,6 @@ struct ProfileView: View {
     @State var avatarItem: PhotosPickerItem?
     @State var avatarImage: Image = Image(systemName: "person.crop.circle")
     @State var showErrorDownLoading = false
-    @State var user: UserInformation?
     var storageService = StorageService.share
     
     var body: some View {
@@ -60,10 +59,6 @@ struct ProfileView: View {
                 VStack(alignment: .leading) {
                     Text("Name")
                         .font(.caption)
-                    Text(user?.displayName ?? "n/a")
-                    Text("Email")
-                        .font(.caption)
-                    Text(user?.email ?? "n/a")
                 }
                 .padding([.leading, .trailing])
                 Spacer()

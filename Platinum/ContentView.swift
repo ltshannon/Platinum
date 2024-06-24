@@ -11,38 +11,43 @@ struct ContentView: View {
     @EnvironmentObject var dataModel: DataModel
     @EnvironmentObject var userAuth: Authentication
     @EnvironmentObject var firebaseService: FirebaseService
+    @EnvironmentObject var portfolioService: PortfolioService
     @StateObject var networkService = NetworkService()
-    @StateObject var swiftSoupService = SwiftSoupService()
     @State private var showSignIn: Bool = false
     @State var userId = ""
     
     var body: some View {
         TabView {
-            StockListView(key: "EliteDividendPayers")
+            StockListView(key: .eliteDividendPayers)
                 .tabItem {
-                    Label("Elite", systemImage: "rectangle.grid.2x2")
+                    Label("Dividend", systemImage: "rectangle.grid.2x2")
                 }
                 .tag(1)
-            StockListView(key: "GrowthInvestor")
+            StockListView(key: .growthInvestor)
                 .tabItem {
                     Label("Growth", systemImage: "rectangle.grid.2x2")
                 }
                 .tag(2)
-            StockListView(key: "BreakthroughStocks")
+            StockListView(key: .breakthroughStocks)
                 .tabItem {
                     Label("Breakthrough", systemImage: "rectangle.grid.2x2")
                 }
                 .tag(3)
-            StockListView(key: "AcceleratedProfits")
+            StockListView(key: .acceleratedProfits)
                 .tabItem {
                     Label("Accelerated", systemImage: "rectangle.grid.2x2")
                 }
                 .tag(4)
+            TotalsView()
+                .tabItem {
+                    Label("Totals", systemImage: "equal.circle")
+                }
+                .tag(5)
             SettingsView()
                 .tabItem {
                     Label("Settings", systemImage: "gear")
                 }
-                .tag(5)
+                .tag(6)
         }
         .onReceive(userAuth.$state) { state in
             debugPrint("😍", "ContentView onReceive userAtuh.state: \(state)")
@@ -52,6 +57,7 @@ struct ContentView: View {
             if state == .loggedIn {
                 Task {
                     await firebaseService.createUser(token: userAuth.fcmToken)
+                    portfolioService.loadPortfolios()
                 }
                 showSignIn = false
             }
@@ -69,32 +75,7 @@ struct ContentView: View {
         .fullScreenCover(isPresented: $showSignIn) {
             SignInView()
         }
-//        VStack {
-//            ForEach(networkService.stockData) { item in
-//                HStack {
-//                    Text(item.id)
-//                    Text(item.price, format: .currency(code: "USD"))
-//                }
-//            }
-//            ForEach(swiftSoupService.eliteDividendPayersArray, id: \.self) { item in
-//                Text(item)
-//            }
-//            Button {
-//                swiftSoupService.fetch()
-//            } label: {
-//                Text("Get data no passowrd")
-//            }
-//            Button {
-//                swiftSoupService.fetchWithPassword()
-//            } label: {
-//                Text("Get data with passowrd")
-//            }
-//        }
-//        .padding()
-//        .onAppear {
-////            networkService.fetch(tickers: "AAPL,IBM")
-//            
-//        }
+
     }
 }
 

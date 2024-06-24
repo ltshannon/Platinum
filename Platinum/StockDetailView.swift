@@ -10,7 +10,7 @@ import SwiftUI
 struct StockDetailView: View {
     @EnvironmentObject var portfolioService: PortfolioService
     @Environment(\.dismiss) private var dismiss
-    var key: String
+    var key: PortfolioType
     var item: ItemData
     @State var symbol: String = ""
     @State var basis: String = ""
@@ -122,6 +122,30 @@ struct StockDetailView: View {
         }
     }
     
+    func updatePortfolio(key: PortfolioType) async {
+        let result = await portfolioService.getPortfolio(listName: key)
+        await MainActor.run {
+            switch key {
+            case .acceleratedProfits:
+                portfolioService.acceleratedProfitsList = result.0
+                portfolioService.acceleratedProfitsTotal = result.1
+                portfolioService.acceleratedProfitsStockList = result.2
+            case .breakthroughStocks:
+                portfolioService.breakthroughList = result.0
+                portfolioService.breakthroughTotal = result.1
+                portfolioService.breakthroughStockList = result.2
+            case .eliteDividendPayers:
+                portfolioService.eliteDividendPayersList = result.0
+                portfolioService.eliteDividendPayersTotal = result.1
+                portfolioService.eliteDividendPayersStockList = result.2
+            case .growthInvestor:
+                portfolioService.growthInvestorList = result.0
+                portfolioService.growthInvestorTotal = result.1
+                portfolioService.growthInvestorStockList = result.2
+            }
+        }
+    }
+    
     func update() {
         if symbol == originalSymbol && basis == originalBasis && quantity == originalQuantity {
             showAlertMessage = "Nothing changed to update"
@@ -130,14 +154,16 @@ struct StockDetailView: View {
         }
         
         Task {
-            await portfolioService.updateStock(listName: key, symbol: symbol, quantity: Int(quantity) ?? 0, basis: basis)
+            await portfolioService.updateStock(listName: key.rawValue, symbol: symbol, quantity: Int(quantity) ?? 0, basis: basis)
+            await updatePortfolio(key: key)
             dismiss()
         }
     }
     
     func delete() {
         Task {
-            await portfolioService.deleteStock(listName: key, symbol: symbol)
+            await portfolioService.deleteStock(listName: key.rawValue, symbol: symbol)
+            await updatePortfolio(key: key)
             dismiss()
         }
     }

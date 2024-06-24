@@ -7,9 +7,16 @@
 
 import SwiftUI
 
+let currencyFormatter: NumberFormatter = {
+    let formatter = NumberFormatter()
+    formatter.numberStyle = .currency
+    formatter.currencySymbol = ""
+    return formatter
+}()
+
 struct StockListView: View {
     @EnvironmentObject var portfolioService: PortfolioService
-    var key: String
+    var key: PortfolioType
     @StateObject var networkService = NetworkService()
     @State var showingSheet: Bool = false
     @State var firstTime = true
@@ -17,31 +24,27 @@ struct StockListView: View {
     @State var item: ItemData = ItemData(symbol: "", basis: 0, price: 0, gainLose: 0, quantity: 0)
     @State var total: Decimal = 0
     @State var items: [ItemData] = []
+    @State var stockList: [String] = []
     let columns: [GridItem] = [
-                                GridItem(.fixed(60), spacing: 3),
-                                GridItem(.fixed(45), spacing: 3),
+                                GridItem(.fixed(55), spacing: 3),
+                                GridItem(.fixed(40), spacing: 3),
+                                GridItem(.fixed(75), spacing: 3),
+                                GridItem(.fixed(75), spacing: 3),
                                 GridItem(.fixed(80), spacing: 3),
-                                GridItem(.fixed(80), spacing: 3),
-                                GridItem(.fixed(80), spacing: 3),
-                                GridItem(.fixed(40), spacing: 3)
+                                GridItem(.fixed(20), spacing: 3)
     ]
-    let currencyFormatter: NumberFormatter = {
-      let formatter = NumberFormatter()
-      formatter.numberStyle = .currency
-      return formatter
-    }()
-    
+
     var body: some View {
         NavigationStack {
             ScrollView {
                 LazyVGrid(columns: columns, alignment: .leading) {
                     Group {
-                        Text("Symbol")
+                        Text("Sym")
                         Text("Qty")
-                        Text("Basis")
-                        Text("Price")
-                        Text("Total")
-                        Text("Edit")
+                        Text("Basis $")
+                        Text("Price $")
+                        Text("Total $")
+                        Text("")
                     }
                     .underline()
                     ForEach(items, id: \.id) { item in
@@ -57,7 +60,14 @@ struct StockListView: View {
                         } label: {
                             Image(systemName: "pencil")
                         }
-
+                    }
+                    Group {
+                        Text("")
+                        Text("")
+                        Text("")
+                        Text("")
+                        Text("---------")
+                        Text("")
                     }
                     Group {
                         Text("Total")
@@ -66,13 +76,17 @@ struct StockListView: View {
                         Text("")
                         Text("\(total as NSDecimalNumber, formatter: currencyFormatter)")
                             .foregroundStyle(total < 0 ? .red : .green)
+                        Text("")
                     }
                 }
+            }
+            .refreshable {
+                pullToRefresh()
             }
             .navigationDestination(isPresented: $showSecondView) {
                 StockDetailView(key: key, item: item)
              }
-            .padding([.leading], 10)
+            .padding([.leading], 5)
             Spacer()
             Button {
                 showingSheet = true
@@ -86,52 +100,107 @@ struct StockListView: View {
                 }
             }
             Spacer()
-                .navigationBarTitle(key.camelCaseToWords())
+            .navigationBarTitle(key.rawValue.camelCaseToWords())
+            .background {
+                NavigationStyleLayer()
+            }
             .onAppear {
-                updateStocks()
+                switch key {
+                case .acceleratedProfits:
+                    items = portfolioService.acceleratedProfitsList
+                case .breakthroughStocks:
+                    items = portfolioService.breakthroughList
+                case .eliteDividendPayers:
+                    items = portfolioService.eliteDividendPayersList
+                case .growthInvestor:
+                    items = portfolioService.growthInvestorList
+                }
+            }
+            .onReceive(portfolioService.$eliteDividendPayersList) { list in
+                if key == .eliteDividendPayers {
+                    self.items = list
+                }
+            }
+            .onReceive(portfolioService.$eliteDividendPayersTotal) { total in
+                if key == .eliteDividendPayers {
+                    self.total = total
+                }
+            }
+            .onReceive(portfolioService.$eliteDividendPayersStockList) { stockList in
+                if key == .eliteDividendPayers {
+                    self.stockList = stockList
+                }
+            }
+            .onReceive(portfolioService.$acceleratedProfitsList) { list in
+                if key == .acceleratedProfits {
+                    self.items = list
+                }
+            }
+            .onReceive(portfolioService.$acceleratedProfitsTotal) { total in
+                if key == .acceleratedProfits {
+                    self.total = total
+                }
+            }
+            .onReceive(portfolioService.$acceleratedProfitsStockList) { stockList in
+                if key == .acceleratedProfits {
+                    self.stockList = stockList
+                }
+            }
+            .onReceive(portfolioService.$breakthroughList) { list in
+                if key == .breakthroughStocks {
+                    self.items = list
+                }
+            }
+            .onReceive(portfolioService.$breakthroughTotal) { total in
+                if key == .breakthroughStocks {
+                    self.total = total
+                }
+            }
+            .onReceive(portfolioService.$breakthroughStockList) { stockList in
+                if key == .breakthroughStocks {
+                    self.stockList = stockList
+                }
+            }
+            .onReceive(portfolioService.$growthInvestorList) { list in
+                if key == .growthInvestor {
+                    self.items = list
+                }
+            }
+            .onReceive(portfolioService.$growthInvestorTotal) { total in
+                if key == .growthInvestor {
+                    self.total = total
+                }
+            }
+            .onReceive(portfolioService.$growthInvestorStockList) { stockList in
+                if key == .growthInvestor {
+                    self.stockList = stockList
+                }
             }
             .fullScreenCover(isPresented: $showingSheet, onDismiss: didDismiss) {
-                AddingNewStockView(key: key)
+                AddingNewStockView(key: key, stockList: portfolioService.stockList)
             }
         }
     }
     
-    func updateStocks() {
+    func pullToRefresh() {
+        refreshStocks()
+    }
+    
+    func refreshStocks() {
         Task {
             let result = await portfolioService.getPortfolio(listName: key)
             items = result.0
             total = result.1
+            stockList = result.2
         }
     }
     
     func didDismiss() {
-        updateStocks()
+        refreshStocks()
     }
-    
-//    func updateValuesForStocks() {
-//        Task {
-//            var total: Decimal = 0
-//            var items = await dataModel.restore(key: key)
-//            let array = items.map { $0.symbol }
-//            let string: String = array.joined(separator: ",")
-//            let data = await networkService.fetch(tickers: string)
-//            for item in data {
-//                if let row = items.firstIndex(where: { $0.symbol == item.id }) {
-//                    items[row].price = Decimal(Double(item.price))
-//                    let gainLose = Decimal(items[row].quantity) * (Decimal(Double(item.price)) - items[row].basis)
-//                    items[row].gainLose = gainLose
-//                    total += gainLose
-//                }
-//            }
-//            await MainActor.run {
-//                dataModel.items = items
-//                self.total = total
-//            }
-//        }
-//    }
     
 }
 
 #Preview {
-    StockListView(key: "acceleratedProfits")
+    StockListView(key: .acceleratedProfits)
 }

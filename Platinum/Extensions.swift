@@ -52,3 +52,30 @@ extension String {
         }
     }
 }
+
+struct NavigationStyleLayer: UIViewControllerRepresentable {
+  @MainActor
+  final class ViewController: UIViewController {
+    override func viewDidLoad() {
+      super.viewDidLoad()
+      view.backgroundColor = .clear
+      view.isUserInteractionEnabled = false
+    }
+
+    override func didMove(toParent parent: UIViewController?) {
+      super.didMove(toParent: parent)
+
+      if let navigationController = parent?.navigationController as? UINavigationController {
+        navigationController.navigationBar.standardAppearance.largeTitleTextAttributes = [.font: UIFont.systemFont(ofSize: 30.0)]
+      }
+    }
+  }
+
+  func makeUIViewController(context: Context) -> ViewController {
+    .init()
+  }
+
+  func updateUIViewController(_ uiViewController: ViewController, context: Context) {
+
+  }
+}

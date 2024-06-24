@@ -8,14 +8,14 @@
 import SwiftUI
 
 struct AddingNewStockView: View {
-    @EnvironmentObject var dataModel: DataModel
     @EnvironmentObject var portfolioService: PortfolioService
     @Environment(\.dismiss) var dismiss
-    var key: String
-    @State var symbol: String = ""
+    var key: PortfolioType
+    var stockList: [String]
     @State var basis: String = ""
     @State var quantity: String = ""
-    @State var isDisabled = true
+    @State var selectedStock = ""
+    @State var firstTime = false
     @FocusState private var focusedField: FocusedField?
     
     enum FocusedField {
@@ -27,17 +27,14 @@ struct AddingNewStockView: View {
             VStack {
                 Form {
                     Section {
-                        TextField("Symbol", text: $symbol)
-                            .focused($focusedField, equals: .symbol)
-                            .onChange(of: symbol) { oldValue, newValue in
-                                if newValue.count <= 4 {
-                                    symbol = String(newValue).uppercased()
-                                } else {
-                                    symbol = oldValue
+                        List {
+                            Picker("Stock Symbol", selection: $selectedStock) {
+                                ForEach(stockList, id: \.self) { stock in
+                                    Text(stock)
                                 }
                             }
-                    } header: {
-                        Text("Stock Symbol")
+                        }
+                        .pickerStyle(.navigationLink)
                     }
                     Section {
                         TextField("Quantity", text: $quantity)
@@ -49,7 +46,7 @@ struct AddingNewStockView: View {
                     Section {
                         TextField("Basis", text: $basis)
                             .focused($focusedField, equals: .basis)
-                            .keyboardType(.numberPad)
+                            .keyboardType(.decimalPad)
                     } header: {
                         Text("Stock Basis")
                     }
@@ -75,27 +72,29 @@ struct AddingNewStockView: View {
                     } label: {
                         Text("Add")
                     }
-                    .disabled(isDisabled)
                 }
             }
-            .onChange(of: symbol) { oldValue, newValue in
-                isDisabled = newValue.isEmpty
-            }
             .onAppear {
-                focusedField = .symbol
+                if firstTime == false {
+                    firstTime = true
+                    focusedField = .symbol
+                    if stockList.isEmpty == false {
+                        selectedStock = stockList.first!
+                    }
+                }
             }
         }
     }
     
     func add() {
-        let item = ItemData(symbol: symbol, basis: Decimal(string: basis) ?? 0, price: 0, gainLose: 0, quantity: Int(quantity) ?? 0)
+        let item = ItemData(symbol: selectedStock, basis: Decimal(string: basis) ?? 0, price: 0, gainLose: 0, quantity: Int(quantity) ?? 0)
         Task {
-            await portfolioService.addStock(listName: key, item: item)
+            await portfolioService.addStock(listName: key.rawValue, item: item)
             dismiss()
         }
     }
 }
 
 #Preview {
-    AddingNewStockView(key: "aaa")
+    AddingNewStockView(key: .acceleratedProfits, stockList: [])
 }
