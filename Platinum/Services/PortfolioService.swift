@@ -91,9 +91,9 @@ class PortfolioService: ObservableObject {
         
     }
     
-    func updateStock(listName: String, symbol: String, quantity: Int, basis: String) async {
+    func updateStock(listName: String, symbol: String, originalSymbol: String, quantity: Int, basis: String) async {
         
-        await firebaseService.updateItem(listName: listName, symbol: symbol, quantity: quantity, basis: basis)
+        await firebaseService.updateItem(listName: listName, symbol: symbol, originalSymbol: originalSymbol, quantity: quantity, basis: basis)
         
     }
     

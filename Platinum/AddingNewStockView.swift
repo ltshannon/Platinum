@@ -9,6 +9,7 @@ import SwiftUI
 
 struct AddingNewStockView: View {
     @EnvironmentObject var portfolioService: PortfolioService
+    @EnvironmentObject var firebaseService: FirebaseService
     @Environment(\.dismiss) var dismiss
     var key: PortfolioType
     var stockList: [String]
@@ -26,15 +27,25 @@ struct AddingNewStockView: View {
         NavigationStack {
             VStack {
                 Form {
-                    Section {
-                        List {
-                            Picker("Stock Symbol", selection: $selectedStock) {
-                                ForEach(stockList, id: \.self) { stock in
-                                    Text(stock)
+                    if firebaseService.user.subscription == true {
+                        Section {
+                            List {
+                                Picker("Stock Symbol", selection: $selectedStock) {
+                                    ForEach(stockList, id: \.self) { stock in
+                                        Text(stock)
+                                    }
                                 }
                             }
+                            .pickerStyle(.navigationLink)
                         }
-                        .pickerStyle(.navigationLink)
+                    } else {
+                        Section {
+                            TextField("Stock Symbol", text: $selectedStock)
+                                .textCase(.uppercase)
+                                .disableAutocorrection(true)
+                        } header: {
+                            Text("Stock Symbol")
+                        }
                     }
                     Section {
                         TextField("Quantity", text: $quantity)
@@ -78,8 +89,10 @@ struct AddingNewStockView: View {
                 if firstTime == false {
                     firstTime = true
                     focusedField = .symbol
-                    if stockList.isEmpty == false {
+                    if firebaseService.user.subscription == true && stockList.isEmpty == false {
                         selectedStock = stockList.first!
+                    } else {
+                        selectedStock = ""
                     }
                 }
             }

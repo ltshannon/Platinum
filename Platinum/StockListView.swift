@@ -189,9 +189,29 @@ struct StockListView: View {
     func refreshStocks() {
         Task {
             let result = await portfolioService.getPortfolio(listName: key)
-            items = result.0
-            total = result.1
-            stockList = result.2
+            await MainActor.run {
+                items = result.0
+                total = result.1
+                stockList = result.2
+                switch key {
+                case .acceleratedProfits:
+                    portfolioService.acceleratedProfitsList = result.0
+                    portfolioService.acceleratedProfitsTotal = result.1
+                    portfolioService.acceleratedProfitsStockList = result.2
+                case .breakthroughStocks:
+                    portfolioService.breakthroughList = result.0
+                    portfolioService.breakthroughTotal = result.1
+                    portfolioService.breakthroughStockList = result.2
+                case .eliteDividendPayers:
+                    portfolioService.eliteDividendPayersList = result.0
+                    portfolioService.eliteDividendPayersTotal = result.1
+                    portfolioService.eliteDividendPayersStockList = result.2
+                case .growthInvestor:
+                    portfolioService.growthInvestorList = result.0
+                    portfolioService.growthInvestorTotal = result.1
+                    portfolioService.growthInvestorStockList = result.2
+                }
+            }
         }
     }
     

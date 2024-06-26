@@ -28,44 +28,49 @@ struct TotalsView: View {
     
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading) {
-                LazyVGrid(columns: columns, alignment: .leading) {
-                    Group {
-                        Text("Portfolio")
-                        Text("Total")
-                    }
-                    Group {
-                        Text("---------")
-                        Text("-----")
-                    }
-                    ForEach(PortfolioType.allCases, id: \.id) { item in
-                        Text(item.rawValue.camelCaseToWords())
-                        switch item {
-                        case .acceleratedProfits:
-                            Text("$\(acceleratedProfitsTotal as NSDecimalNumber, formatter: currencyFormatter)")
-                        case .breakthroughStocks:
-                            Text("$\(breakthroughTotal as NSDecimalNumber, formatter: currencyFormatter)")
-                        case .eliteDividendPayers:
-                            Text("$\(eliteDividendPayersTotal as NSDecimalNumber, formatter: currencyFormatter)")
-                        case .growthInvestor:
-                            Text("$\(growthInvestorTotal as NSDecimalNumber, formatter: currencyFormatter)")
+            ScrollView {
+                VStack(alignment: .leading) {
+                    LazyVGrid(columns: columns, alignment: .leading) {
+                        Group {
+                            Text("Portfolio")
+                            Text("Total")
+                        }
+                        Group {
+                            Text("---------")
+                            Text("-----")
+                        }
+                        ForEach(PortfolioType.allCases, id: \.id) { item in
+                            Text(item.rawValue.camelCaseToWords())
+                            switch item {
+                            case .acceleratedProfits:
+                                Text("$\(acceleratedProfitsTotal as NSDecimalNumber, formatter: currencyFormatter)")
+                            case .breakthroughStocks:
+                                Text("$\(breakthroughTotal as NSDecimalNumber, formatter: currencyFormatter)")
+                            case .eliteDividendPayers:
+                                Text("$\(eliteDividendPayersTotal as NSDecimalNumber, formatter: currencyFormatter)")
+                            case .growthInvestor:
+                                Text("$\(growthInvestorTotal as NSDecimalNumber, formatter: currencyFormatter)")
+                            }
+                        }
+                        Group {
+                            Text("")
+                            Text("-----------")
+                        }
+                        Group {
+                            Text("Total")
+                            Text("$\(total as NSDecimalNumber, formatter: currencyFormatter)")
                         }
                     }
-                    Group {
-                        Text("")
-                        Text("-----------")
-                    }
-                    Group {
-                        Text("Total")
-                        Text("$\(total as NSDecimalNumber, formatter: currencyFormatter)")
-                    }
+                    Spacer()
                 }
-                Spacer()
             }
             .padding(.leading, 30)
             .navigationBarTitle("Investment Totals")
             .background {
                 NavigationStyleLayer()
+            }
+            .refreshable {
+                pullToRefresh()
             }
             .onAppear {
                 acceleratedProfitsTotal = portfolioService.acceleratedProfitsTotal
@@ -96,6 +101,17 @@ struct TotalsView: View {
     func computeTotal() {
         total = acceleratedProfitsTotal + breakthroughTotal + eliteDividendPayersTotal + growthInvestorTotal
     }
+    
+    func pullToRefresh() {
+        refreshStocks()
+    }
+    
+    func refreshStocks() {
+        Task {
+            portfolioService.loadPortfolios()
+        }
+    }
+    
 }
 
 #Preview {

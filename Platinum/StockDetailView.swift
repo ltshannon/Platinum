@@ -154,7 +154,7 @@ struct StockDetailView: View {
         }
         
         Task {
-            await portfolioService.updateStock(listName: key.rawValue, symbol: symbol, quantity: Int(quantity) ?? 0, basis: basis)
+            await portfolioService.updateStock(listName: key.rawValue, symbol: symbol, originalSymbol: originalSymbol, quantity: Int(quantity) ?? 0, basis: basis)
             await updatePortfolio(key: key)
             dismiss()
         }

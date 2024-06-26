@@ -8,8 +8,6 @@
 import SwiftUI
 import Firebase
 import FirebaseFirestore
-import FirebaseFunctions
-import FirebaseFirestoreSwift
 
 let database = Firestore.firestore()
 
@@ -31,11 +29,44 @@ struct ModelStock: Codable, Identifiable, Hashable {
     var GrowthInvestor: [String]?
 }
 
+struct FirebaseUserInformation: Codable, Identifiable, Hashable {
+    @DocumentID var id: String?
+    var displayName: String?
+    var email: String?
+    var subscription: Bool?
+}
+
 class FirebaseService: ObservableObject {
     static let shared = FirebaseService()
     @AppStorage("profile-url") var profileURL: String = ""
+    @Published var user: FirebaseUserInformation = FirebaseUserInformation(id: "", displayName: "", email: "", subscription: false)
     var fmc: String = ""
+    var userListener: ListenerRegistration?
     
+    func getUser() {
+        
+        guard let user = Auth.auth().currentUser else {
+            return
+        }
+        
+        let listener = database.collection("users").document(user.uid).addSnapshotListener { documentSnapshot, error in
+
+            guard let document = documentSnapshot, let _ = document.data() else {
+                print("getUser: Error fetching document: \(user.uid)")
+                return
+            }
+            do {
+                let user = try document.data(as: FirebaseUserInformation.self)
+                DispatchQueue.main.async {
+                    self.user = user
+                }
+            } catch {
+                debugPrint("getUser reading data: \(error.localizedDescription)")
+            }
+
+        }
+        self.userListener = listener
+    }
     
     func createUser(token: String) async {
         
@@ -160,7 +191,7 @@ class FirebaseService: ObservableObject {
         }
     }
     
-    func updateItem(listName: String, symbol: String, quantity: Int, basis: String) async {
+    func updateItem(listName: String, symbol: String, originalSymbol: String, quantity: Int, basis: String) async {
         guard let user = Auth.auth().currentUser else {
             return
         }
@@ -170,16 +201,20 @@ class FirebaseService: ObservableObject {
             item = String(basis.dropFirst())
         }
         let dec = Decimal(string: item) ?? 0
-        debugPrint("dec: \(dec)")
         let temp = NSDecimalNumber(decimal:  dec)
-        let value = [
-            "quantity": quantity,
-            "basis": temp
-        ] as [String : Any]
-        do {
-            try await database.collection("users").document(user.uid).collection(listName).document(symbol).updateData(value)
-        } catch {
-            debugPrint(String.boom, "updateItem: \(error)")
+        if symbol != originalSymbol {
+            await deleteItem(listName: listName, symbol: originalSymbol)
+            await addItem(listName: listName, symbol: symbol, quantity: quantity, basis: dec)
+        } else {
+            let value = [
+                "quantity": quantity,
+                "basis": temp
+            ] as [String : Any]
+            do {
+                try await database.collection("users").document(user.uid).collection(listName).document(originalSymbol).updateData(value)
+            } catch {
+                debugPrint(String.boom, "updateItem: \(error)")
+            }
         }
     }
     

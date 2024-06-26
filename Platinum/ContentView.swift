@@ -56,7 +56,8 @@ struct ContentView: View {
             }
             if state == .loggedIn {
                 Task {
-                    await firebaseService.createUser(token: userAuth.fcmToken)
+//                    await firebaseService.createUser(token: userAuth.fcmToken)
+                    firebaseService.getUser()
                     portfolioService.loadPortfolios()
                 }
                 showSignIn = false
