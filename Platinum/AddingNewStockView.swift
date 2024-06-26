@@ -17,6 +17,7 @@ struct AddingNewStockView: View {
     @State var quantity: String = ""
     @State var selectedStock = ""
     @State var firstTime = false
+    @State var navigationBarTitle = ""
     @FocusState private var focusedField: FocusedField?
     
     enum FocusedField {
@@ -67,7 +68,7 @@ struct AddingNewStockView: View {
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     HStack {
-                        Text("Add Stock").font(.headline)
+                        Text(navigationBarTitle).font(.headline)
                     }
                 }
                 ToolbarItem(placement: .cancellationAction) {
@@ -91,6 +92,7 @@ struct AddingNewStockView: View {
                     focusedField = .symbol
                     if firebaseService.user.subscription == true && stockList.isEmpty == false {
                         selectedStock = stockList.first!
+                        navigationBarTitle = key.rawValue.camelCaseToWords()
                     } else {
                         selectedStock = ""
                     }

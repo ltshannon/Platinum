@@ -177,7 +177,7 @@ struct StockListView: View {
                 }
             }
             .fullScreenCover(isPresented: $showingSheet, onDismiss: didDismiss) {
-                AddingNewStockView(key: key, stockList: portfolioService.stockList)
+                AddingNewStockView(key: key, stockList: stockList)
             }
         }
     }

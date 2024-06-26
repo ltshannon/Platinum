@@ -18,6 +18,16 @@ struct ContentView: View {
     
     var body: some View {
         TabView {
+            StockListView(key: .acceleratedProfits)
+                .tabItem {
+                    Label("Accelerated", systemImage: "rectangle.grid.2x2")
+                }
+                .tag(4)
+            StockListView(key: .breakthroughStocks)
+                .tabItem {
+                    Label("Breakthrough", systemImage: "rectangle.grid.2x2")
+                }
+                .tag(3)
             StockListView(key: .eliteDividendPayers)
                 .tabItem {
                     Label("Dividend", systemImage: "rectangle.grid.2x2")
@@ -28,16 +38,6 @@ struct ContentView: View {
                     Label("Growth", systemImage: "rectangle.grid.2x2")
                 }
                 .tag(2)
-            StockListView(key: .breakthroughStocks)
-                .tabItem {
-                    Label("Breakthrough", systemImage: "rectangle.grid.2x2")
-                }
-                .tag(3)
-            StockListView(key: .acceleratedProfits)
-                .tabItem {
-                    Label("Accelerated", systemImage: "rectangle.grid.2x2")
-                }
-                .tag(4)
             TotalsView()
                 .tabItem {
                     Label("Totals", systemImage: "equal.circle")

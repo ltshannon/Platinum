@@ -44,12 +44,16 @@ struct TotalsView: View {
                             switch item {
                             case .acceleratedProfits:
                                 Text("$\(acceleratedProfitsTotal as NSDecimalNumber, formatter: currencyFormatter)")
+                                    .foregroundStyle(acceleratedProfitsTotal < 0 ?.red : .green)
                             case .breakthroughStocks:
                                 Text("$\(breakthroughTotal as NSDecimalNumber, formatter: currencyFormatter)")
+                                    .foregroundStyle(breakthroughTotal < 0 ?.red : .green)
                             case .eliteDividendPayers:
                                 Text("$\(eliteDividendPayersTotal as NSDecimalNumber, formatter: currencyFormatter)")
+                                    .foregroundStyle(eliteDividendPayersTotal < 0 ?.red : .green)
                             case .growthInvestor:
                                 Text("$\(growthInvestorTotal as NSDecimalNumber, formatter: currencyFormatter)")
+                                    .foregroundStyle(growthInvestorTotal < 0 ?.red : .green)
                             }
                         }
                         Group {
@@ -59,6 +63,7 @@ struct TotalsView: View {
                         Group {
                             Text("Total")
                             Text("$\(total as NSDecimalNumber, formatter: currencyFormatter)")
+                                .foregroundStyle(total < 0 ?.red : .green)
                         }
                     }
                     Spacer()
