@@ -33,30 +33,42 @@ class PortfolioService: ObservableObject {
     @Published var growthInvestorTotal: Decimal = 0
     @Published var growthInvestorStockList: [String] = []
     @Published var stockList: [String] = []
+    @Published var isHidden = true
+    @Published var progress = 0.0
     
     func loadPortfolios() {
         Task { @MainActor in
-            var result = await getPortfolio(listName: .eliteDividendPayers)
-            self.eliteDividendPayersList = result.0
-            self.eliteDividendPayersTotal = result.1
-            self.eliteDividendPayersStockList = result.2
-            result = await getPortfolio(listName: .acceleratedProfits)
+            isHidden = false
+            progress = 0.0
+            var result = await getPortfolio(listName: .acceleratedProfits)
             acceleratedProfitsList = result.0
             acceleratedProfitsTotal = result.1
             acceleratedProfitsStockList = result.2
+            progress = 25
             result = await getPortfolio(listName: .breakthroughStocks)
             breakthroughList = result.0
             breakthroughTotal = result.1
             breakthroughStockList = result.2
+            progress = 50
+            result = await getPortfolio(listName: .eliteDividendPayers)
+            self.eliteDividendPayersList = result.0
+            self.eliteDividendPayersTotal = result.1
+            self.eliteDividendPayersStockList = result.2
+            progress = 75
             result = await getPortfolio(listName: .growthInvestor)
             growthInvestorList = result.0
             growthInvestorTotal = result.1
             growthInvestorStockList = result.2
+            progress = 100
+            isHidden = true
         }
     }
     
     func getPortfolio(listName: PortfolioType) async -> ([ItemData], Decimal, [String]) {
-
+        
+        await MainActor.run {
+            isHidden = false
+        }
         let stockList = await firebaseService.getStockList(listName: listName.rawValue)
         let data = await firebaseService.getPortfolioList(stockList: stockList, listName: listName.rawValue)
         var items: [ItemData] = []
@@ -64,7 +76,7 @@ class PortfolioService: ObservableObject {
             let temp = ItemData(symbol: item.id ?? "NA", basis: item.basis, price: 0, gainLose: 0, quantity: item.quantity)
             items.append(temp)
         }
-            
+        
         var total: Decimal = 0
         let string: String = stockList.joined(separator: ",")
         let stockData = await networkService.fetch(tickers: string)
@@ -80,8 +92,8 @@ class PortfolioService: ObservableObject {
         let modelStock = await firebaseService.getModelStockList(listName: listName)
         await MainActor.run {
             self.stockList = modelStock.sorted()
+            isHidden = true
         }
-        
         return (items, total, modelStock)
     }
     

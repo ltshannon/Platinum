@@ -67,6 +67,10 @@ struct TotalsView: View {
                         }
                     }
                     Spacer()
+                    if portfolioService.isHidden == false {
+                        ProgressView("Loading...", value: portfolioService.progress, total: 100)
+                            .padding(.trailing, 30)
+                    }
                 }
             }
             .padding(.leading, 30)
@@ -84,16 +88,17 @@ struct TotalsView: View {
                 growthInvestorTotal = portfolioService.growthInvestorTotal
                 computeTotal()
             }
-            .onReceive(portfolioService.$eliteDividendPayersTotal) { total in
-                eliteDividendPayersTotal = total
-                computeTotal()
-            }
+
             .onReceive(portfolioService.$acceleratedProfitsTotal) { total in
                 acceleratedProfitsTotal = total
                 computeTotal()
             }
             .onReceive(portfolioService.$breakthroughTotal) { total in
                 breakthroughTotal = total
+                computeTotal()
+            }
+            .onReceive(portfolioService.$eliteDividendPayersTotal) { total in
+                eliteDividendPayersTotal = total
                 computeTotal()
             }
             .onReceive(portfolioService.$growthInvestorTotal) { total in

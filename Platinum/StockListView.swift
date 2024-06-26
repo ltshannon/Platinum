@@ -104,6 +104,17 @@ struct StockListView: View {
             .background {
                 NavigationStyleLayer()
             }
+//            .navigationBarItems(trailing:
+//                ProgressView(value: 25.0, total: 100)
+//            )
+            .toolbar {
+              ToolbarItem(placement: .navigationBarTrailing) {
+                  if portfolioService.isHidden == false {
+                      ProgressView()
+                          .progressViewStyle(CircularProgressViewStyle(tint: Color.blue))
+                  }
+              }
+            }
             .onAppear {
                 switch key {
                 case .acceleratedProfits:
