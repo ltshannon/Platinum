@@ -25,6 +25,11 @@
 		B136CA4B2C2917AA00A23278 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = B136CA4A2C2917AA00A23278 /* FirebaseAuth */; };
 		B136CA4D2C2917AA00A23278 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = B136CA4C2C2917AA00A23278 /* FirebaseFirestore */; };
 		B136CA4F2C2917AA00A23278 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = B136CA4E2C2917AA00A23278 /* FirebaseStorage */; };
+		B14694AA2C3A086100B3C8FE /* AllocationAndModelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14694A92C3A086100B3C8FE /* AllocationAndModelView.swift */; };
+		B14694AD2C3A08F700B3C8FE /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = B14694AC2C3A08F700B3C8FE /* SwiftSoup */; };
+		B18B321A2C3CC410006661E0 /* GetPlatinumGrowthData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B18B32192C3CC410006661E0 /* GetPlatinumGrowthData.swift */; };
+		B18B321C2C3CCD11006661E0 /* PlatinumGrowthModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B18B321B2C3CCD11006661E0 /* PlatinumGrowthModel.swift */; };
+		B1C51BDE2C3CD535004FA294 /* DisplayModelPortfolioView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C51BDD2C3CD535004FA294 /* DisplayModelPortfolioView.swift */; };
 		B1FD8AD92C1A5C89000D0F37 /* PlatinumApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1FD8AD82C1A5C89000D0F37 /* PlatinumApp.swift */; };
 		B1FD8ADB2C1A5C89000D0F37 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1FD8ADA2C1A5C89000D0F37 /* ContentView.swift */; };
 		B1FD8ADD2C1A5C8A000D0F37 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B1FD8ADC2C1A5C8A000D0F37 /* Assets.xcassets */; };
@@ -49,6 +54,10 @@
 		B136CA402C24FC3400A23278 /* PortfolioService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortfolioService.swift; sourceTree = "<group>"; };
 		B136CA422C28F2B100A23278 /* TotalsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TotalsView.swift; sourceTree = "<group>"; };
 		B136CA502C2A377700A23278 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		B14694A92C3A086100B3C8FE /* AllocationAndModelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllocationAndModelView.swift; sourceTree = "<group>"; };
+		B18B32192C3CC410006661E0 /* GetPlatinumGrowthData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetPlatinumGrowthData.swift; sourceTree = "<group>"; };
+		B18B321B2C3CCD11006661E0 /* PlatinumGrowthModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatinumGrowthModel.swift; sourceTree = "<group>"; };
+		B1C51BDD2C3CD535004FA294 /* DisplayModelPortfolioView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayModelPortfolioView.swift; sourceTree = "<group>"; };
 		B1FD8AD52C1A5C89000D0F37 /* Platinum.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Platinum.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B1FD8AD82C1A5C89000D0F37 /* PlatinumApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatinumApp.swift; sourceTree = "<group>"; };
 		B1FD8ADA2C1A5C89000D0F37 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -64,6 +73,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B136CA4B2C2917AA00A23278 /* FirebaseAuth in Frameworks */,
+				B14694AD2C3A08F700B3C8FE /* SwiftSoup in Frameworks */,
 				B136CA4D2C2917AA00A23278 /* FirebaseFirestore in Frameworks */,
 				B136CA4F2C2917AA00A23278 /* FirebaseStorage in Frameworks */,
 			);
@@ -81,6 +91,7 @@
 				B1FD8AE72C1A5CFD000D0F37 /* NetworkService.swift */,
 				B136CA272C23A93700A23278 /* StorageService.swift */,
 				B136CA402C24FC3400A23278 /* PortfolioService.swift */,
+				B18B321B2C3CCD11006661E0 /* PlatinumGrowthModel.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -112,6 +123,9 @@
 				B136CA072C1E6A9600A23278 /* AddingNewStockView.swift */,
 				B136CA1F2C2387B800A23278 /* SignInView.swift */,
 				B136CA212C23A82D00A23278 /* SettingsView.swift */,
+				B1C51BDD2C3CD535004FA294 /* DisplayModelPortfolioView.swift */,
+				B18B32192C3CC410006661E0 /* GetPlatinumGrowthData.swift */,
+				B14694A92C3A086100B3C8FE /* AllocationAndModelView.swift */,
 				B136CA232C23A83D00A23278 /* ProfileView.swift */,
 				B136CA422C28F2B100A23278 /* TotalsView.swift */,
 				B136CA1B2C23845300A23278 /* Extensions.swift */,
@@ -153,6 +167,7 @@
 				B136CA4A2C2917AA00A23278 /* FirebaseAuth */,
 				B136CA4C2C2917AA00A23278 /* FirebaseFirestore */,
 				B136CA4E2C2917AA00A23278 /* FirebaseStorage */,
+				B14694AC2C3A08F700B3C8FE /* SwiftSoup */,
 			);
 			productName = Platinum;
 			productReference = B1FD8AD52C1A5C89000D0F37 /* Platinum.app */;
@@ -184,6 +199,7 @@
 			mainGroup = B1FD8ACC2C1A5C88000D0F37;
 			packageReferences = (
 				B136CA492C2917AA00A23278 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				B14694AB2C3A08F700B3C8FE /* XCRemoteSwiftPackageReference "SwiftSoup" */,
 			);
 			productRefGroup = B1FD8AD62C1A5C89000D0F37 /* Products */;
 			projectDirPath = "";
@@ -214,6 +230,7 @@
 			files = (
 				B136CA062C1E697A00A23278 /* StockDetailView.swift in Sources */,
 				B136CA082C1E6A9600A23278 /* AddingNewStockView.swift in Sources */,
+				B18B321A2C3CC410006661E0 /* GetPlatinumGrowthData.swift in Sources */,
 				B136CA1E2C23853A00A23278 /* FirebaseService.swift in Sources */,
 				B1FD8ADB2C1A5C89000D0F37 /* ContentView.swift in Sources */,
 				B1FD8AE82C1A5CFD000D0F37 /* NetworkService.swift in Sources */,
@@ -221,11 +238,14 @@
 				B136CA022C1E639100A23278 /* DataModel.swift in Sources */,
 				B136CA202C2387B800A23278 /* SignInView.swift in Sources */,
 				B136CA1C2C23845300A23278 /* Extensions.swift in Sources */,
+				B18B321C2C3CCD11006661E0 /* PlatinumGrowthModel.swift in Sources */,
 				B1FD8AD92C1A5C89000D0F37 /* PlatinumApp.swift in Sources */,
 				B136CA042C1E692700A23278 /* StockListView.swift in Sources */,
 				B136CA1A2C23841B00A23278 /* Authentication.swift in Sources */,
 				B136CA242C23A83D00A23278 /* ProfileView.swift in Sources */,
+				B14694AA2C3A086100B3C8FE /* AllocationAndModelView.swift in Sources */,
 				B136CA412C24FC3400A23278 /* PortfolioService.swift in Sources */,
+				B1C51BDE2C3CD535004FA294 /* DisplayModelPortfolioView.swift in Sources */,
 				B136CA432C28F2B100A23278 /* TotalsView.swift in Sources */,
 				B136CA262C23A86500A23278 /* ButtonStyles.swift in Sources */,
 				B136CA222C23A82D00A23278 /* SettingsView.swift in Sources */,
@@ -465,6 +485,14 @@
 				minimumVersion = 10.28.0;
 			};
 		};
+		B14694AB2C3A08F700B3C8FE /* XCRemoteSwiftPackageReference "SwiftSoup" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/scinfu/SwiftSoup.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.7.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -482,6 +510,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = B136CA492C2917AA00A23278 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseStorage;
+		};
+		B14694AC2C3A08F700B3C8FE /* SwiftSoup */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B14694AB2C3A08F700B3C8FE /* XCRemoteSwiftPackageReference "SwiftSoup" */;
+			productName = SwiftSoup;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

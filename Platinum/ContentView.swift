@@ -43,11 +43,16 @@ struct ContentView: View {
                     Label("Totals", systemImage: "equal.circle")
                 }
                 .tag(5)
+            DisplayModelPortfolioView()
+                .tabItem {
+                    Label("Model Portfolio", systemImage: "rectangle.grid.2x2")
+                }
+                .tag(6)
             SettingsView()
                 .tabItem {
                     Label("Settings", systemImage: "gear")
                 }
-                .tag(6)
+                .tag(7)
         }
         .onReceive(userAuth.$state) { state in
             debugPrint("😍", "ContentView onReceive userAtuh.state: \(state)")
