@@ -9,9 +9,13 @@ import SwiftUI
 
 struct DisplayModelPortfolioView: View {
     @EnvironmentObject var platinumGrowthModel: PlatinumGrowthModel
+    @EnvironmentObject var firebaseService: FirebaseService
+    @EnvironmentObject var userAuth: Authentication
     @State var showingSheet = false
     @State var firstTime = true
     @State var segment: PlatinumGrowType = .notSet
+    @State var showingAlert = false
+    @State var alertMessage = ""
     
     var body: some View {
         VStack {
@@ -25,37 +29,34 @@ struct DisplayModelPortfolioView: View {
             .pickerStyle(.segmented)
 
             ScrollView {
-                VStack {
+                VStack(alignment: .leading) {
                     if let model = platinumGrowthModel.allocationAndModeData {
                         if segment == .modelPortfolio {
-                            ForEach(model.modelPortfolio, id: \.id) { item in
-                                Text(item.type.rawValue)
-                                    .foregroundStyle(.red)
-                                ForEach(item.modelPortfolioData, id: \.id) { value in
-                                    HStack {
-                                        Text(value.symbol)
-                                        Text(value.stockAction.rawValue)
-                                            .foregroundStyle(getActionColor(stockAction: value.stockAction))
-                                    }
-                                }
-                            }
+                            ModelPortfolioView(modelPortfolio: model.modelPortfolio)
                         } else if segment == .allocationTool {
-                            ForEach(model.allocationTool, id: \.id) { item in
-                                Text(item.type.rawValue)
-                                    .foregroundStyle(.red)
-                                ForEach(item.investments, id: \.id) { value in
-                                    Text(value.investorType.rawValue)
-                                    ForEach(value.stockInfomation, id: \.id) { stockInfomation in
-                                        Text(stockInfomation.symbol)
-                                    }
+                            if model.allocationTool.count > 0 {
+                                AllocationToolView(investments: model.allocationTool[0].investments)
+                            }
+                        } else if segment == .sevenDayRotation {
+                            ForEach(model.sevenDayRotation, id: \.id) { item in
+                                HStack {
+                                    Text(item.symbol)
+                                    Text(item.stockAction.rawValue)
+                                        .foregroundStyle(item.stockAction.getActionColor(stockAction: item.stockAction))
+                                    Spacer()
                                 }
                             }
                         }
                     }
                 }
+                .frame(maxWidth: .infinity)
+                .padding([.leading, .trailing], 20)
                 .fullScreenCover(isPresented: $showingSheet, onDismiss: didDismiss) {
                     GetPlatinumGrowthData()
                 }
+            }
+            .alert(alertMessage, isPresented: $showingAlert) {
+                Button("OK", role: .cancel) { }
             }
         }
         .toolbar {
@@ -72,6 +73,8 @@ struct DisplayModelPortfolioView: View {
                 showingSheet = true
                 firstTime = false
                 platinumGrowthModel.allocationAndModeData  = AllocationAndModeData(type: .notSet, allocationTool: [], modelPortfolio: [], sevenDayRotation: [])
+                platinumGrowthModel.showingAlert = false
+                platinumGrowthModel.alertMessage = ""
             }
         }
         .onChange(of: platinumGrowthModel.allocationAndModeData?.type) {
@@ -80,18 +83,49 @@ struct DisplayModelPortfolioView: View {
                 segment = platinumGrowthModel.allocationAndModeData?.type ?? .notSet
             }
         }
+        .onChange(of: platinumGrowthModel.showingAlert) {
+            if let changed = platinumGrowthModel.showingAlert {
+                if changed {
+                    showingAlert = true
+                    alertMessage = platinumGrowthModel.alertMessage ?? ""
+                }
+            }
+        }
+        .onChange(of: platinumGrowthModel.allocationAndModeData?.modelPortfolio) {
+            updateModelPortfolio(data: platinumGrowthModel.allocationAndModeData?.modelPortfolio)
+        }
     }
     
     func didDismiss() {
         showingSheet = false
     }
     
-    func getActionColor(stockAction: StockAction) -> Color {
-        switch stockAction {
-        case .new: return .green
-        case .sell: return .red
-        case .topStock: return .yellow
-        case .none: return .clear
+    func updateModelPortfolio(data: [ModelPortfolio]?) {
+        if var modelPortfolios = data, modelPortfolios.count > 0 {
+            Task {
+                for (index, portfolio) in modelPortfolios.enumerated() {
+                    var listName = ""
+                    switch portfolio.type {
+                    case .acceleratedProfits: listName = PortfolioType.acceleratedProfits.rawValue
+                    case .breakthroughStocks: listName = PortfolioType.breakthroughStocks.rawValue
+                    case .eliteDividendPayers: listName = PortfolioType.eliteDividendPayers.rawValue
+                    case .growthInvestor: listName = PortfolioType.growthInvestor.rawValue
+                    }
+                    let stockList = await firebaseService.getStockList(listName: listName)
+                    for (index2, item) in portfolio.modelPortfolioData.enumerated() {
+                        if stockList.contains(item.symbol) {
+                            modelPortfolios[index].modelPortfolioData[index2].inPorfilio = true
+                        }
+                    }
+                    let email = userAuth.email.lowercased()
+                    if email.contains("lawrence.t.shannon@gmail.com") {
+                            
+                    }
+                }
+                await MainActor.run {
+                    platinumGrowthModel.allocationAndModeData?.modelPortfolio = modelPortfolios
+                }
+            }
         }
     }
 }

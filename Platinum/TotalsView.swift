@@ -11,16 +11,22 @@ struct TotalsView: View {
     @EnvironmentObject var portfolioService: PortfolioService
     @State var acceleratedProfitsList: [ItemData] = []
     @State var acceleratedProfitsTotal: Decimal = 0
+    @State var acceleratedProfitsTotalBasis: Decimal = 0
     @State var acceleratedProfitsStockList: [String] = []
     @State var breakthroughList: [ItemData] = []
     @State var breakthroughTotal: Decimal = 0
+    @State var breakthroughTotalBasis: Decimal = 0
     @State var breakthroughStockList: [String] = []
     @State var eliteDividendPayersList: [ItemData] = []
     @State var eliteDividendPayersTotal: Decimal = 0
+    @State var eliteDividendPayersTotalBasis: Decimal = 0
     @State var eliteDividendPayersStockList: [String] = []
     @State var growthInvestorList: [ItemData] = []
     @State var growthInvestorTotal: Decimal = 0
+    @State var growthInvestorTotalBasis: Decimal = 0
     @State var total: Decimal = 0
+    @State var totalBasis: Decimal = 0
+    @State var totalValue: Decimal = 0
     let columns: [GridItem] = [
                                 GridItem(.fixed(250), spacing: 5),
                                 GridItem(.fixed(150), spacing: 5)
@@ -61,8 +67,18 @@ struct TotalsView: View {
                             Text("-----------")
                         }
                         Group {
-                            Text("Total")
+                            Text("Total Increase")
                             Text("$\(total as NSDecimalNumber, formatter: currencyFormatter)")
+                                .foregroundStyle(total < 0 ?.red : .green)
+                        }
+                        Group {
+                            Text("Total Basis cost")
+                            Text("$\(totalBasis as NSDecimalNumber, formatter: currencyFormatter)")
+                                .foregroundStyle(total < 0 ?.red : .green)
+                        }
+                        Group {
+                            Text("Total Value")
+                            Text("$\(totalValue as NSDecimalNumber, formatter: currencyFormatter)")
                                 .foregroundStyle(total < 0 ?.red : .green)
                         }
                     }
@@ -86,6 +102,10 @@ struct TotalsView: View {
                 breakthroughTotal = portfolioService.breakthroughTotal
                 eliteDividendPayersTotal = portfolioService.eliteDividendPayersTotal
                 growthInvestorTotal = portfolioService.growthInvestorTotal
+                acceleratedProfitsTotalBasis = portfolioService.acceleratedProfitsTotalBasis
+                breakthroughTotalBasis = portfolioService.breakthroughTotalBasis
+                eliteDividendPayersTotalBasis = portfolioService.eliteDividendPayersTotalBasis
+                growthInvestorTotalBasis = portfolioService.growthInvestorTotalBasis
                 computeTotal()
             }
 
@@ -105,11 +125,29 @@ struct TotalsView: View {
                 growthInvestorTotal = total
                 computeTotal()
             }
+            .onReceive(portfolioService.$acceleratedProfitsTotalBasis) { total in
+                acceleratedProfitsTotalBasis = total
+                computeTotal()
+            }
+            .onReceive(portfolioService.$breakthroughTotalBasis) { total in
+                breakthroughTotalBasis = total
+                computeTotal()
+            }
+            .onReceive(portfolioService.$eliteDividendPayersTotalBasis) { total in
+                eliteDividendPayersTotalBasis = total
+                computeTotal()
+            }
+            .onReceive(portfolioService.$growthInvestorTotalBasis) { total in
+                growthInvestorTotalBasis = total
+                computeTotal()
+            }
         }
     }
     
     func computeTotal() {
         total = acceleratedProfitsTotal + breakthroughTotal + eliteDividendPayersTotal + growthInvestorTotal
+        totalBasis = acceleratedProfitsTotalBasis + breakthroughTotalBasis + eliteDividendPayersTotalBasis + growthInvestorTotalBasis
+        totalValue = total + totalBasis
     }
     
     func pullToRefresh() {

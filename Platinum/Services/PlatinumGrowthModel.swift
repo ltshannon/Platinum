@@ -11,9 +11,11 @@ import SwiftUI
 class PlatinumGrowthModel: ObservableObject {
     static let shared = PlatinumGrowthModel()
     @Published var allocationAndModeData: AllocationAndModeData?
+    @Published var showingAlert: Bool?
+    @Published var alertMessage: String?
     
-    func addData() {
-        
+    func resetShowingAlert() {
+        showingAlert?.toggle()
     }
     
 }

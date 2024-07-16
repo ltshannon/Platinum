@@ -14,7 +14,9 @@ struct GetPlatinumGrowthData: View {
     var body: some View {
         NavigationStack {
             VStack {
-                AllocationAndModelView(allocationAndModeData: $platinumGrowthModel.allocationAndModeData)
+                AllocationAndModelView(allocationAndModeData: $platinumGrowthModel.allocationAndModeData,
+                                       showingAlert: $platinumGrowthModel.showingAlert,
+                                       alertMessage: $platinumGrowthModel.alertMessage)
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {

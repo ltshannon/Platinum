@@ -22,15 +22,19 @@ class PortfolioService: ObservableObject {
     var networkService = NetworkService()
     @Published var acceleratedProfitsList: [ItemData] = []
     @Published var acceleratedProfitsTotal: Decimal = 0
+    @Published var acceleratedProfitsTotalBasis: Decimal = 0
     @Published var acceleratedProfitsStockList: [String] = []
     @Published var breakthroughList: [ItemData] = []
     @Published var breakthroughTotal: Decimal = 0
+    @Published var breakthroughTotalBasis: Decimal = 0
     @Published var breakthroughStockList: [String] = []
     @Published var eliteDividendPayersList: [ItemData] = []
     @Published var eliteDividendPayersTotal: Decimal = 0
+    @Published var eliteDividendPayersTotalBasis: Decimal = 0
     @Published var eliteDividendPayersStockList: [String] = []
     @Published var growthInvestorList: [ItemData] = []
     @Published var growthInvestorTotal: Decimal = 0
+    @Published var growthInvestorTotalBasis: Decimal = 0
     @Published var growthInvestorStockList: [String] = []
     @Published var stockList: [String] = []
     @Published var isHidden = true
@@ -44,27 +48,31 @@ class PortfolioService: ObservableObject {
             acceleratedProfitsList = result.0
             acceleratedProfitsTotal = result.1
             acceleratedProfitsStockList = result.2
+            acceleratedProfitsTotalBasis = result.3
             progress = 25
             result = await getPortfolio(listName: .breakthroughStocks)
             breakthroughList = result.0
             breakthroughTotal = result.1
             breakthroughStockList = result.2
+            breakthroughTotalBasis = result.3
             progress = 50
             result = await getPortfolio(listName: .eliteDividendPayers)
             self.eliteDividendPayersList = result.0
             self.eliteDividendPayersTotal = result.1
             self.eliteDividendPayersStockList = result.2
+            self.eliteDividendPayersTotalBasis = result.3
             progress = 75
             result = await getPortfolio(listName: .growthInvestor)
             growthInvestorList = result.0
             growthInvestorTotal = result.1
             growthInvestorStockList = result.2
+            growthInvestorTotalBasis = result.3
             progress = 100
             isHidden = true
         }
     }
     
-    func getPortfolio(listName: PortfolioType) async -> ([ItemData], Decimal, [String]) {
+    func getPortfolio(listName: PortfolioType) async -> ([ItemData], Decimal, [String], Decimal) {
         
         await MainActor.run {
             isHidden = false
@@ -78,6 +86,7 @@ class PortfolioService: ObservableObject {
         }
         
         var total: Decimal = 0
+        var totalBasis: Decimal = 0
         let string: String = stockList.joined(separator: ",")
         let stockData = await networkService.fetch(tickers: string)
         for item in stockData {
@@ -86,6 +95,7 @@ class PortfolioService: ObservableObject {
                 let gainLose = Decimal(items[row].quantity) * (Decimal(Double(item.price)) - items[row].basis)
                 items[row].gainLose = gainLose
                 total += gainLose
+                totalBasis += items[row].basis * Decimal(items[row].quantity)
             }
         }
         
@@ -94,7 +104,7 @@ class PortfolioService: ObservableObject {
             self.stockList = modelStock.sorted()
             isHidden = true
         }
-        return (items, total, modelStock)
+        return (items, total, modelStock, totalBasis)
     }
     
     func addStock(listName: String, item: ItemData) async {

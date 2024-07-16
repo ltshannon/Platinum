@@ -23,12 +23,13 @@ struct StockListView: View {
     @State var showSecondView: Bool = false
     @State var item: ItemData = ItemData(symbol: "", basis: 0, price: 0, gainLose: 0, quantity: 0)
     @State var total: Decimal = 0
+    @State var totalBasis: Decimal = 0
     @State var items: [ItemData] = []
     @State var stockList: [String] = []
     let columns: [GridItem] = [
                                 GridItem(.fixed(55), spacing: 3),
                                 GridItem(.fixed(40), spacing: 3),
-                                GridItem(.fixed(75), spacing: 3),
+                                GridItem(.fixed(80), spacing: 3),
                                 GridItem(.fixed(75), spacing: 3),
                                 GridItem(.fixed(80), spacing: 3),
                                 GridItem(.fixed(20), spacing: 3)
@@ -64,7 +65,7 @@ struct StockListView: View {
                     Group {
                         Text("")
                         Text("")
-                        Text("")
+                        Text("---------")
                         Text("")
                         Text("---------")
                         Text("")
@@ -72,7 +73,7 @@ struct StockListView: View {
                     Group {
                         Text("Total")
                         Text("")
-                        Text("")
+                        Text("\(totalBasis as NSDecimalNumber, formatter: currencyFormatter)")
                         Text("")
                         Text("\(total as NSDecimalNumber, formatter: currencyFormatter)")
                             .foregroundStyle(total < 0 ? .red : .green)
@@ -137,6 +138,11 @@ struct StockListView: View {
                     self.total = total
                 }
             }
+            .onReceive(portfolioService.$eliteDividendPayersTotalBasis) { total in
+                if key == .eliteDividendPayers {
+                    self.totalBasis = total
+                }
+            }
             .onReceive(portfolioService.$eliteDividendPayersStockList) { stockList in
                 if key == .eliteDividendPayers {
                     self.stockList = stockList
@@ -150,6 +156,11 @@ struct StockListView: View {
             .onReceive(portfolioService.$acceleratedProfitsTotal) { total in
                 if key == .acceleratedProfits {
                     self.total = total
+                }
+            }
+            .onReceive(portfolioService.$acceleratedProfitsTotalBasis) { total in
+                if key == .acceleratedProfits {
+                    self.totalBasis = total
                 }
             }
             .onReceive(portfolioService.$acceleratedProfitsStockList) { stockList in
@@ -167,6 +178,11 @@ struct StockListView: View {
                     self.total = total
                 }
             }
+            .onReceive(portfolioService.$breakthroughTotalBasis) { total in
+                if key == .breakthroughStocks {
+                    self.totalBasis = total
+                }
+            }
             .onReceive(portfolioService.$breakthroughStockList) { stockList in
                 if key == .breakthroughStocks {
                     self.stockList = stockList
@@ -180,6 +196,11 @@ struct StockListView: View {
             .onReceive(portfolioService.$growthInvestorTotal) { total in
                 if key == .growthInvestor {
                     self.total = total
+                }
+            }
+            .onReceive(portfolioService.$growthInvestorTotal) { total in
+                if key == .growthInvestor {
+                    self.totalBasis = total
                 }
             }
             .onReceive(portfolioService.$growthInvestorStockList) { stockList in
@@ -204,6 +225,7 @@ struct StockListView: View {
                 items = result.0
                 total = result.1
                 stockList = result.2
+                totalBasis = result.3
                 switch key {
                 case .acceleratedProfits:
                     portfolioService.acceleratedProfitsList = result.0

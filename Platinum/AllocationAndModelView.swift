@@ -14,8 +14,8 @@ struct StockInformation: Identifiable {
     var portfolio = ""
     var symbol = ""
     var company = ""
-    var recentPrice = 0.0
-    var buyBelow = 0.0
+    var recentPrice: Decimal = 0.0
+    var buyBelow: Decimal = 0.0
     var value = 0.0
     var numberOfShare = 0
 }
@@ -38,6 +38,7 @@ struct ModelPortfolioData: Identifiable {
     var recentPrice: String = ""
     var buyBelow: String = ""
     var yield: String = ""
+    var inPorfilio = false
 }
 
 struct SevenDayRotationData: Identifiable {
@@ -52,7 +53,11 @@ struct SevenDayRotationData: Identifiable {
     var buyBelow: String = ""
 }
 
-struct ModelPortfolio: Identifiable {
+struct ModelPortfolio: Identifiable, Equatable {
+    static func == (lhs: ModelPortfolio, rhs: ModelPortfolio) -> Bool {
+        return true
+    }
+    
     var id: String = UUID().uuidString
     var type: InvestorType
     var modelPortfolioData: [ModelPortfolioData]
@@ -87,7 +92,22 @@ enum StockAction: String, CaseIterable {
     case new = "NEW"
     case sell = "SELL"
     case topStock = "TOP STOCK"
-    case none = ""
+    case none = "none"
+    case unknown = "UNKNOWN"
+}
+
+extension StockAction {
+    
+    func getActionColor(stockAction: StockAction) -> Color {
+        switch stockAction {
+        case .new: return .green
+        case .sell: return .red
+        case .topStock: return .yellow
+        case .none: return .clear
+        case .unknown: return .orange
+        }
+    }
+    
 }
 
 enum PlatinumGrowType: String, CaseIterable {
@@ -107,6 +127,9 @@ struct AllocationAndModeData {
 
 struct AllocationAndModelView: UIViewRepresentable {
     @Binding var allocationAndModeData: AllocationAndModeData?
+    @Binding var showingAlert: Bool?
+    @Binding var alertMessage: String?
+    var debug = true
     
     func updateUIView(_ uiView: WKWebView, context: Context) {
 
@@ -130,6 +153,7 @@ struct AllocationAndModelView: UIViewRepresentable {
         var allocationTool: [AllocationTool] = []
         var modelPortfolio: [ModelPortfolio] = []
         var sevenDayRotation: [SevenDayRotationData] = []
+        var doc: Document = Document("")
         
         init(_ parent: AllocationAndModelView) {
             self.parent = parent
@@ -140,6 +164,7 @@ struct AllocationAndModelView: UIViewRepresentable {
             webView.evaluateJavaScript("document.body.innerHTML", completionHandler: { (value: Any!, error: Error!) -> Void in
                 if error != nil {
                     debugPrint("evaluateJavaScript: \(error.localizedDescription)")
+                    self.showAlert()
                     return
                 }
                 
@@ -151,61 +176,69 @@ struct AllocationAndModelView: UIViewRepresentable {
         }
         
         func processHTML(html: String) {
-            let text = "<iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-GTM-N7BC\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"> Skip to Content Investorplace Louis\' Services Growth Investor Accelerated Profits Power Portfolio Breakthrough Stocks AI Advantage Portfolio Grader Dividend Grader Market360 My Account My Services Portfolio Tracker Manage Account Support Logout Platinum Growth Club Primary Menu Search for: Home Issues & Alerts Special Reports Portfolios Model Portfolio 7-Day Rotation Allocation Tool Member Resources About Us Support Contact Us Disclosures & Disclaimers Privacy Policy Terms of Use Ad Choices Do Not Sell My Personal Information Cookie Preferences 7-Day Rotation Select Portfolio Model Portfolio Export CSV Print Louis Navellier’s stocks that will perform well in the next seven days. Learn more about this portfolio. Symbol Company Name Buy Date Buy Price Return Recent Price Buy Below ALAR Alarum Technologies Ltd. 06/03/24 $36.47 2.41% $37.35 $52.00 ANF Abercrombie & Fitch Co. 05/06/24 $129.38 34.56% $174.10 $199.00 AROC Archrock, Inc. 03/25/24 $19.40 5.93% $20.55 $21.00 CSWC Capital Southwest Corporation 03/11/24 $24.59 9.31% $26.88 $28.00 INSW International Seaways, Inc. 07/01/24 $59.20 -3.40% $57.19 $66.00 LLY New Eli Lilly & Co. 07/08/24 $918.00 2.37% $939.78 $979.00 MPLX New MPLX LP 07/08/24 $42.33 -1.18% $41.83 $46.00 PGR Progressive Corporation 04/15/24 $206.59 1.65% $209.99 $218.00 TRGP New Targa Resources Corp. 07/08/24 $132.55 0.26% $132.89 $137.00 VITL Vital Farms, Inc. 06/03/24 $43.11 5.08% $45.30 $56.00 Average Return: 5.70% Facebook Twitter Linkedin About Us Support Contact Us Disclosures & Disclaimers Privacy Policy Terms of Use Ad Choices Do Not Sell My Personal Information Cookie Preferences Financial Market Data powered by FinancialContent Services, Inc. All rights reserved. Nasdaq quotes delayed at least 15 minutes, all others at least 20 minutes. Copyright © 2024 InvestorPlace Media, LLC. All rights reserved. 1125 N Charles St, Baltimore, MD 21201."
-            
-            if let rotation = findAndRemove(text: text, search: "7-Day Rotation") {
-                debugPrint("7-Day Rotation")
-                process7DayRotation(data: rotation)
-            }
-            
-        }
-/*
+
             do {
-                let doc: Document = try SwiftSoup.parse(html)
+                doc = try SwiftSoup.parse(html)
                 guard let text = try? doc.text() else {
                     debugPrint("SwiftSoup failed on .text()")
+                    self.showAlert()
                     return
                 }
-                debugPrint("text: \(text)")
+//                debugPrint("text: \(text)")
                 if let allocationToolData = findAndRemove(text: text, search: "Conservative Moderate Aggressive") {
-                    debugPrint("Processing Conservative Moderate Aggressive")
+                    if parent.debug {
+                        debugPrint("Processing Conservative Moderate Aggressive")
+                    }
+                    allocationTool = []
                     processAllocationTool(data: allocationToolData)
                     DispatchQueue.main.async {
-                        self.parent.allocationAndModeData!.type = .notSet
-                        self.parent.allocationAndModeData!.type = .allocationTool
-                        self.parent.allocationAndModeData!.allocationTool = self.allocationTool
+                        self.parent.allocationAndModeData?.type = .notSet
+                        self.parent.allocationAndModeData?.type = .allocationTool
+                        self.parent.allocationAndModeData?.allocationTool = self.allocationTool
                     }
-                } else if let modelPortfolioData = findAndRemove(text: text, search: "Model Portfolio") {
-                    debugPrint("Processing Model Portfolio")
+                } else if let rotation = findAndRemove(text: text, search: "Symbol Company Name Buy Date Buy Price Return Recent Price Buy Below ") {
+                    if parent.debug {
+                        debugPrint("7-Day Rotation")
+                    }
+                    sevenDayRotation = []
+                    process7DayRotation(data: rotation)
+                    DispatchQueue.main.async {
+                        self.parent.allocationAndModeData?.type = .notSet
+                        self.parent.allocationAndModeData?.type = .modelPortfolio
+                        self.parent.allocationAndModeData?.sevenDayRotation =  self.sevenDayRotation
+                    }
+                    
+                } else if let modelPortfolioData = findAndRemove(text: text, search: "Symbol Company Name Total Grade Buy Date Buy Price Return Recent Price Buy Below Yield ") {
+                    if parent.debug {
+                        debugPrint("Processing Model Portfolio")
+                    }
+                    modelPortfolio = []
                     processModelPortfolio(data: modelPortfolioData)
                     DispatchQueue.main.async {
-                        self.parent.allocationAndModeData!.type = .notSet
-                        self.parent.allocationAndModeData!.type = .modelPortfolio
-                        self.parent.allocationAndModeData!.modelPortfolio =  self.modelPortfolio
+                        self.parent.allocationAndModeData?.type = .notSet
+                        self.parent.allocationAndModeData?.type = .modelPortfolio
+                        self.parent.allocationAndModeData?.modelPortfolio = []
+                        self.parent.allocationAndModeData?.modelPortfolio =  self.modelPortfolio
                     }
-                } else if let rotation = findAndRemove(text: text, search: "7-Day Rotation") {
-                    debugPrint("7-Day Rotation")
-                    process7DayRotation(data: rotation)
                 }
             } catch Exception.Error(_, let message) {
-                print("Error parsing HTML: \(message)")
+                debugPrint("Error parsing HTML: \(message)")
+                self.showAlert()
             } catch {
-                print("error")
+                debugPrint("error")
+                self.showAlert()
             }
         }
-*/
+
         func processModelPortfolio(data: String) {
             var processData: String
             
             processData = data
             for investor in InvestorType.allCases {
                 
-                guard let modelPortfolioData = findAndRemove(text: processData, search: "Symbol Company Name Total Grade Buy Date Buy Price Return Recent Price Buy Below Yield ") else {
-                    debugPrint("ModelPortfolio didn't find header")
-                    return
-                }
-                guard let text = getSubstring(text: modelPortfolioData, string: "Average Return: ") else {
+                guard let text = getSubstring(text: processData, string: "Average Return: ") else {
                     debugPrint("processModelPortfolio Average Return:")
+                    self.showAlert()
                     return
                 }
 //                debugPrint("data \(text)")
@@ -214,6 +247,11 @@ struct AllocationAndModelView: UIViewRepresentable {
                     modelPortfolio.append(localModelPortfolio)
                 }
 
+                guard let modelPortfolioData = findAndRemove(text: processData, search: "Symbol Company Name Total Grade Buy Date Buy Price Return Recent Price Buy Below Yield ") else {
+                    debugPrint("ModelPortfolio didn't find header")
+                    return
+                }
+                
                 processData = modelPortfolioData
             }
         }
@@ -230,23 +268,17 @@ struct AllocationAndModelView: UIViewRepresentable {
             var buyBelow = ""
 
             processData = data
-            guard var elite = getSubstring(text: processData, string: "Symbol Company Name Buy Date Buy Price Return Recent Price Buy Below") else {
-                debugPrint("process7DayRotation")
-                return
-            }
-            guard let text1 = findAndRemove(text: processData, search: "Symbol Company Name Buy Date Buy Price Return Recent Price Buy Below") else {
-                debugPrint("process7DayRotationfindAndRemove Symbol Company Name Buy Date Buy Price Return Recent Price Buy Below")
-                return
-            }
-            processData = text1.trimmingCharacters(in: .whitespacesAndNewlines)
+            processData = processData.trimmingCharacters(in: .whitespacesAndNewlines)
             while processData.contains("$") {
                 if let temp = getSubstring(text: processData, string: "$") {
                     let trimmed = temp.trimmingCharacters(in: .whitespacesAndNewlines)
                     if let sym = getSubstring(text: trimmed, string: " ") {
                         symbol = sym
                     }
+
                     guard let text1 = findAndRemove(text: trimmed, search: " ") else {
                         debugPrint("process7DayRotation text1 not found")
+                        self.showAlert()
                         return
                     }
                     var array = text1.components(separatedBy: " ")
@@ -275,6 +307,7 @@ struct AllocationAndModelView: UIViewRepresentable {
                 }
                 guard let temp2 = findAndRemove(text: processData, search: "$") else {
                     debugPrint("process7DayRotation could not remove $")
+                    self.showAlert()
                     return
                 }
                 if let price = getSubstring(text: temp2, string: " ") {
@@ -282,6 +315,7 @@ struct AllocationAndModelView: UIViewRepresentable {
                 }
                 guard let temp3 = findAndRemove(text: temp2, search: " ") else {
                     debugPrint("process7DayRotation could not remove space 1")
+                    self.showAlert()
                     return
                 }
                 if let percent = getSubstring(text: temp3, string: " ") {
@@ -289,6 +323,7 @@ struct AllocationAndModelView: UIViewRepresentable {
                 }
                 guard let temp4 = findAndRemove(text: temp3, search: " ") else {
                     debugPrint("process7DayRotation could not remove space 2")
+                    self.showAlert()
                     return
                 }
                 if let recent = getSubstring(text: temp4, string: " ") {
@@ -296,6 +331,7 @@ struct AllocationAndModelView: UIViewRepresentable {
                 }
                 guard let temp5 = findAndRemove(text: temp4, search: " ") else {
                     debugPrint("process7DayRotation could not remove space 3")
+                    self.showAlert()
                     return
                 }
                 if let below = getSubstring(text: temp5, string: " ") {
@@ -303,24 +339,27 @@ struct AllocationAndModelView: UIViewRepresentable {
                 }
                 guard let temp6 = findAndRemove(text: temp5, search: " ") else {
                     debugPrint("process7DayRotation could not remove space 4")
+                    self.showAlert()
                     return
                 }
 
                 company = company.trimmingCharacters(in: .whitespacesAndNewlines)
-                debugPrint("symbol: \(symbol)")
-                debugPrint("stockAction: \(stockAction.rawValue)")
-                debugPrint("company: \(company)")
-                debugPrint("buyDate: \(buyDate)")
-                debugPrint("buyPrice: \(buyPrice)")
-                debugPrint("returnPercent: \(returnPercent)")
-                debugPrint("recentPrice: \(recentPrice)")
-                debugPrint("buyBlow: \(buyBelow)")
+                if parent.debug {
+                    debugPrint("symbol: \(symbol)")
+                    debugPrint("stockAction: \(stockAction.rawValue)")
+                    debugPrint("company: \(company)")
+                    debugPrint("buyDate: \(buyDate)")
+                    debugPrint("buyPrice: \(buyPrice)")
+                    debugPrint("returnPercent: \(returnPercent)")
+                    debugPrint("recentPrice: \(recentPrice)")
+                    debugPrint("buyBlow: \(buyBelow)")
+                }
                 
                 let sevenDayRotationData = SevenDayRotationData(symbol: symbol, stockAction: stockAction, companyName: company, buyDate: buyDate, buyPrice: buyPrice, returnPercent: returnPercent, recentPrice: recentPrice, buyBelow: buyBelow)
                 sevenDayRotation.append(sevenDayRotationData)
                 processData = temp6
                 company = ""
-
+                stockAction = .none
             }
         }
         
@@ -328,10 +367,13 @@ struct AllocationAndModelView: UIViewRepresentable {
             var processData: String
 
             processData = data
+            
             for category in InvestmentCategory.allCases {
+                
                 var newAllocationTool = AllocationTool(type: category, investments: [])
                 guard var elite = getSubstring(text: processData, string: "Symbol Company Name Recent Price Buy Below Value Shares") else {
                     debugPrint("AllocationTool Total Investment Value:")
+                    self.showAlert()
                     return
                 }
                 
@@ -351,17 +393,20 @@ struct AllocationAndModelView: UIViewRepresentable {
                 
                 guard array.count == 4 else {
                     debugPrint("AllocationTool Number of portfolios is wrong")
+                    self.showAlert()
                     return
                 }
                 
                 var portfolioArray = array[0]
                 guard let text3 = findAndRemove(text: processData, search: "Symbol Company Name Recent Price Buy Below Value Shares") else {
                     debugPrint("AllocationTool text3 findAndRemove Symbol Company Name Recent Price Buy Below Value Shares")
+                    self.showAlert()
                     return
                 }
                 
                 guard var subString2 = getSubstring(text: text3, string: "Total Investment Value:") else {
                     debugPrint("AllocationTool Total Investment Value:")
+                    self.showAlert()
                     return
                 }
                 
@@ -370,15 +415,16 @@ struct AllocationAndModelView: UIViewRepresentable {
                 let eliteDividendPayersArray = removeAllocationToolValues(string: subString2, portfolio: portfolioArray)
                 let investmentEliteDividendPayers = Investment(investorType: .eliteDividendPayers, stockInfomation: eliteDividendPayersArray)
                 newAllocationTool.investments.append(investmentEliteDividendPayers)
-                //        debugPrint("eliteDividendPayersArray: \(investmentEliteDividendPayers)")
                 
                 guard let text4 = findAndRemove(text: text3, search: "Symbol Company Name Recent Price Buy Below Value Shares") else {
                     debugPrint("AllocationTool text4 findAndRemove Symbol Company Name Recent Price Buy Below Value Shares")
+                    self.showAlert()
                     return
                 }
                 
                 guard let subString3 = getSubstring(text: text4, string: "Total Investment Value:") else {
                     debugPrint("AllocationTool Total Investment Value:")
+                    self.showAlert()
                     return
                 }
                 
@@ -387,15 +433,16 @@ struct AllocationAndModelView: UIViewRepresentable {
                 let growthInvestorArray = removeAllocationToolValues(string: growthInvestor, portfolio: portfolioArray)
                 let investmentGrowthInvestor = Investment(investorType: .growthInvestor, stockInfomation: growthInvestorArray)
                 newAllocationTool.investments.append(investmentGrowthInvestor)
-                //        debugPrint("growthInvestorArray: \(growthInvestorArray)")
                 
                 guard let text5 = findAndRemove(text: text4, search: "Symbol Company Name Recent Price Buy Below Value Shares") else {
                     debugPrint("AllocationTool text5 findAndRemove Symbol Company Name Recent Price Buy Below Value Shares")
+                    self.showAlert()
                     return
                 }
                 
                 guard let subString4 = getSubstring(text: text5, string: "Total Investment Value:") else {
                     debugPrint("AllocationTool Total Investment Value:")
+                    self.showAlert()
                     return
                 }
                 
@@ -408,11 +455,13 @@ struct AllocationAndModelView: UIViewRepresentable {
                 
                 guard let text6 = findAndRemove(text: text5, search: "Symbol Company Name Recent Price Buy Below Value Shares") else {
                     debugPrint("AllocationTool text6 findAndRemove Symbol Company Name Recent Price Buy Below Value Shares")
+                    self.showAlert()
                     return
                 }
                 
                 guard let subString5 = getSubstring(text: text6, string: "Total Investment Value:") else {
                     debugPrint("AllocationTool Total Investment Value:")
+                    self.showAlert()
                     return
                 }
                 
@@ -425,23 +474,13 @@ struct AllocationAndModelView: UIViewRepresentable {
                 
                 guard let text8 = findAndRemove(text: text6, search: "Total Investment Value:") else {
                     debugPrint("AllocationTool Total Investment Value:")
+                    self.showAlert()
                     return
                 }
                 
                 allocationTool.append(newAllocationTool)
                 processData = text8
             }
-//            for item in self.allocationTool {
-//                debugPrint("AllocationTool portfolio: \(item.type.rawValue)")
-//                for item2 in item.investments {
-//                    debugPrint("investments: \(item2.investorType.rawValue)")
-//                    if item2.investorType == .eliteDividendPayers {
-//                        for item3 in item2.stockInfomation {
-//                            debugPrint("symbol: \(item3.symbol) recentPrice: \(item3.recentPrice) # shares: \(item3.numberOfShare)")
-//                        }
-//                    }
-//                }
-//            }
         }
         
         func removeModelPortfolioValues(string: String) -> [ModelPortfolioData]? {
@@ -466,120 +505,95 @@ struct AllocationAndModelView: UIViewRepresentable {
                     if let sym = getSubstring(text: trimmed, string: " ") {
                         symbol = sym
                     }
-                    guard let text1 = findAndRemove(text: trimmed, search: " ") else {
-                        debugPrint("removeModelPortfolioValues text1 not found")
-                        return nil
-                    }
-                    var array = text1.components(separatedBy: " ")
-                    //        debugPrint("array 1: \(array)")
-                    stockAction = .none
-                    while array.isEmpty == false {
-                        let item = array.removeFirst()
-                        //            debugPrint("array 2: \(array)")
-                        //            debugPrint("item: \(item)")
-                        let temp = item.uppercased()
-                        if temp.contains(StockAction.new.rawValue) {
-                            stockAction = StockAction.new
-                            continue
-                        }
-                        if temp.contains(StockAction.sell.rawValue) {
-                            stockAction = StockAction.sell
-                            continue
-                        }
-                        if temp.contains("TOP") {
-                            stockAction = StockAction.topStock
-                            continue
-                        }
-                        if item.count == 1 {
-                            for grade in TotalGrade.allCases {
-                                switch grade {
-                                case .a:
-                                    if TotalGrade.a.rawValue == item {
-                                        totalGrade = item
-                                    }
-                                case .b:
-                                    if TotalGrade.b.rawValue == item {
-                                        totalGrade = item
-                                    }
-                                case .c:
-                                    if TotalGrade.c.rawValue == item {
-                                        totalGrade = item
+                    var array: [String] = []
+
+                    do {
+                        let classSelector = try doc.getElementsByClass("js-stock-" + symbol)
+                        let html = try classSelector.html()
+                        let html2 = "<html><body>\(html)</body></html>"
+//                        debugPrint("html2: \(html2)")
+                        let doc2: Document = try SwiftSoup.parse(html2)
+                        if let elements = try? doc2.getAllElements(){
+                            for element in elements {
+                                for textNode in element.textNodes() {
+                                    let temp = textNode.text().trimmingCharacters(in: .whitespacesAndNewlines)
+                                    if temp.isNotEmpty {
+                                        array.append(temp)
                                     }
                                 }
                             }
-                            continue
                         }
-                        //            debugPrint("array 6: \(array)")
-                        if let _ = isValidDate(dateString: item) {
-                            buyDate = item
-                            continue
-                        }
-                        company += item + " "
-                        
+                        debugPrint("array: \(array)")
+                    } catch {
+                        debugPrint("doc.getElementsByClass: failed")
                     }
-                }
-                guard let temp2 = findAndRemove(text: processData, search: "$") else {
-                    debugPrint("removeModelPortfolioValues could not remove $")
-                    return nil
-                }
-                if let price = getSubstring(text: temp2, string: " ") {
-                    buyPrice = price
-                }
-                guard let temp3 = findAndRemove(text: temp2, search: " ") else {
-                    debugPrint("removeModelPortfolioValues could not remove space 1")
-                    return nil
-                }
-                if let percent = getSubstring(text: temp3, string: " ") {
-                    returnPercent = percent.replacingOccurrences(of: "%", with: "")
-                }
-                guard let temp4 = findAndRemove(text: temp3, search: " ") else {
-                    debugPrint("removeModelPortfolioValues could not remove space 2")
-                    return nil
-                }
-                if let recent = getSubstring(text: temp4, string: " ") {
-                    recentPrice = recent.replacingOccurrences(of: "$", with: "")
-                }
-                guard let temp5 = findAndRemove(text: temp4, search: " ") else {
-                    debugPrint("removeModelPortfolioValues could not remove space 3")
-                    return nil
-                }
-                if let below = getSubstring(text: temp5, string: " ") {
-                    buyBelow = below.replacingOccurrences(of: "$", with: "")
-                }
-                guard let temp6 = findAndRemove(text: temp5, search: " ") else {
-                    debugPrint("removeModelPortfolioValues could not remove space 4")
-                    return nil
-                }
-                if let value = getSubstring(text: temp6, string: " ") {
-                    yield = value.replacingOccurrences(of: "%", with: "")
-                } else {
-                    yield = temp6.replacingOccurrences(of: "%", with: "")
-                    return nil
-                }
-                
-                guard let temp7 = findAndRemove(text: temp6, search: " ") else {
-                    debugPrint("removeModelPortfolioValues could not remove space 5")
-                    return nil
-                }
-                company = company.trimmingCharacters(in: .whitespacesAndNewlines)
-                debugPrint("symbol: \(symbol)")
-                debugPrint("stockAction: \(stockAction.rawValue)")
-                debugPrint("company: \(company)")
-                debugPrint("totalGrade: \(totalGrade)")
-                debugPrint("buyDate: \(buyDate)")
-                debugPrint("buyPrice: \(buyPrice)")
-                debugPrint("returnPercent: \(returnPercent)")
-                debugPrint("recentPrice: \(recentPrice)")
-                debugPrint("buyBlow: \(buyBelow)")
-                debugPrint("yield: \(yield)")
-                
-                let modelPortfolioData = ModelPortfolioData(symbol: symbol, stockAction: stockAction, companyName: company, totalGrade: totalGrade, buyDate: buyDate, buyPrice: buyPrice, returnPercent: returnPercent, recentPrice: recentPrice, buyBelow: buyBelow, yield: yield)
-                modelPortfolioArray.append(modelPortfolioData)
-                processData = temp7
-                company = ""
+                    
+                    for (index, item) in array.enumerated() {
+                        switch index {
+                        case 0: symbol = item
+                        case 1: company = item
+                        case 2: totalGrade = item
+                        case 3: buyDate = item
+                        case 4: buyPrice = item
+                        case 5: returnPercent = item
+                        case 6: recentPrice = item
+                        case 7: buyBelow = item
+                        case 8: yield = item
+                        case 9:
+                            switch item.uppercased() {
+                            case StockAction.new.rawValue:
+                                stockAction = .new
+                            case StockAction.sell.rawValue:
+                                stockAction = .sell
+                            case StockAction.topStock.rawValue:
+                                stockAction = .topStock
+                            default:
+                                stockAction = .unknown
+                            }
+                        default:
+                            debugPrint("")
+                        }
+                    }
+                    let modelPortfolioData = ModelPortfolioData(symbol: symbol, stockAction: stockAction, companyName: company, totalGrade: totalGrade, buyDate: buyDate, buyPrice: buyPrice, returnPercent: returnPercent, recentPrice: recentPrice, buyBelow: buyBelow, yield: yield, inPorfilio: false)
+                    
+                    modelPortfolioArray.append(modelPortfolioData)
+                    
+                    if stockAction != .none && array.count > 0 {
+                        array.removeLast()
+                    }
+                    guard let last = array.last else {
+                        debugPrint("removeModelPortfolioValues get last failed")
+                        return nil
+                    }
+                    debugPrint("last: \(last)")
+                    guard let temp2 = findAndRemove(text: processData, search: last) else {
+                        debugPrint("removeModelPortfolioValues could not find last")
+                        self.showAlert()
+                        return nil
+                    }
+                    processData = temp2.trimmingCharacters(in: .whitespacesAndNewlines)
+                    symbol = ""
+                    stockAction = .none
+                    company = ""
+                    totalGrade = ""
+                    buyDate = ""
+                    buyPrice = ""
+                    returnPercent = ""
+                    recentPrice = ""
+                    buyBelow = ""
+                    yield = ""
 
+                }
             }
             return modelPortfolioArray
+        }
+        
+        func showAlert() {
+            DispatchQueue.main.async {
+                self.parent.showingAlert = false
+                self.parent.alertMessage = "Failed to process webpage, try again."
+                self.parent.showingAlert = true
+            }
         }
 
         func isValidDate(dateString: String) -> Date? {
@@ -610,8 +624,8 @@ struct AllocationAndModelView: UIViewRepresentable {
         func getStockInfo(portfolio: String, string: String) -> (StockInformation, String)  {
             var symbol = ""
             var company = ""
-            var recentPrice = 0.0
-            var buyBelow = 0.0
+            var recentPrice: Decimal = 0.0
+            var buyBelow: Decimal = 0.0
             var value = 0.0
             var numberOfShare = 0
             var returnValue = ""
@@ -627,9 +641,9 @@ struct AllocationAndModelView: UIViewRepresentable {
                 }
                 
                 if var temp2 = findAndRemove(text: string, search: "$") {
-                    recentPrice = Double(removeCurrency(string: temp2)) ?? 0.0
+                    recentPrice = Decimal(Double(removeCurrency(string: temp2)) ?? 0.0)
                     temp2 = findAndRemove(text: temp2, search: " ") ?? ""
-                    buyBelow = Double(removeCurrency(string: temp2)) ?? 0.0
+                    buyBelow = Decimal(Double(removeCurrency(string: temp2)) ?? 0.0)
                     temp2 = findAndRemove(text: temp2, search: " ") ?? ""
                     value = Double(removeCurrency(string: temp2)) ?? 0.0
                     temp2 = findAndRemove(text: temp2, search: " ") ?? ""
@@ -709,4 +723,3 @@ extension StringProtocol {
         return result
     }
 }
-

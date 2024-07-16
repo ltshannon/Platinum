@@ -27,6 +27,8 @@
 		B136CA4F2C2917AA00A23278 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = B136CA4E2C2917AA00A23278 /* FirebaseStorage */; };
 		B14694AA2C3A086100B3C8FE /* AllocationAndModelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14694A92C3A086100B3C8FE /* AllocationAndModelView.swift */; };
 		B14694AD2C3A08F700B3C8FE /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = B14694AC2C3A08F700B3C8FE /* SwiftSoup */; };
+		B178406A2C40AC9B00B55B96 /* AllocationToolView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17840692C40AC9B00B55B96 /* AllocationToolView.swift */; };
+		B178406C2C41EC0200B55B96 /* ModelPortfolioView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B178406B2C41EC0200B55B96 /* ModelPortfolioView.swift */; };
 		B18B321A2C3CC410006661E0 /* GetPlatinumGrowthData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B18B32192C3CC410006661E0 /* GetPlatinumGrowthData.swift */; };
 		B18B321C2C3CCD11006661E0 /* PlatinumGrowthModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B18B321B2C3CCD11006661E0 /* PlatinumGrowthModel.swift */; };
 		B1C51BDE2C3CD535004FA294 /* DisplayModelPortfolioView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C51BDD2C3CD535004FA294 /* DisplayModelPortfolioView.swift */; };
@@ -55,6 +57,8 @@
 		B136CA422C28F2B100A23278 /* TotalsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TotalsView.swift; sourceTree = "<group>"; };
 		B136CA502C2A377700A23278 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		B14694A92C3A086100B3C8FE /* AllocationAndModelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllocationAndModelView.swift; sourceTree = "<group>"; };
+		B17840692C40AC9B00B55B96 /* AllocationToolView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllocationToolView.swift; sourceTree = "<group>"; };
+		B178406B2C41EC0200B55B96 /* ModelPortfolioView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelPortfolioView.swift; sourceTree = "<group>"; };
 		B18B32192C3CC410006661E0 /* GetPlatinumGrowthData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetPlatinumGrowthData.swift; sourceTree = "<group>"; };
 		B18B321B2C3CCD11006661E0 /* PlatinumGrowthModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatinumGrowthModel.swift; sourceTree = "<group>"; };
 		B1C51BDD2C3CD535004FA294 /* DisplayModelPortfolioView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayModelPortfolioView.swift; sourceTree = "<group>"; };
@@ -124,6 +128,8 @@
 				B136CA1F2C2387B800A23278 /* SignInView.swift */,
 				B136CA212C23A82D00A23278 /* SettingsView.swift */,
 				B1C51BDD2C3CD535004FA294 /* DisplayModelPortfolioView.swift */,
+				B17840692C40AC9B00B55B96 /* AllocationToolView.swift */,
+				B178406B2C41EC0200B55B96 /* ModelPortfolioView.swift */,
 				B18B32192C3CC410006661E0 /* GetPlatinumGrowthData.swift */,
 				B14694A92C3A086100B3C8FE /* AllocationAndModelView.swift */,
 				B136CA232C23A83D00A23278 /* ProfileView.swift */,
@@ -240,10 +246,12 @@
 				B136CA1C2C23845300A23278 /* Extensions.swift in Sources */,
 				B18B321C2C3CCD11006661E0 /* PlatinumGrowthModel.swift in Sources */,
 				B1FD8AD92C1A5C89000D0F37 /* PlatinumApp.swift in Sources */,
+				B178406A2C40AC9B00B55B96 /* AllocationToolView.swift in Sources */,
 				B136CA042C1E692700A23278 /* StockListView.swift in Sources */,
 				B136CA1A2C23841B00A23278 /* Authentication.swift in Sources */,
 				B136CA242C23A83D00A23278 /* ProfileView.swift in Sources */,
 				B14694AA2C3A086100B3C8FE /* AllocationAndModelView.swift in Sources */,
+				B178406C2C41EC0200B55B96 /* ModelPortfolioView.swift in Sources */,
 				B136CA412C24FC3400A23278 /* PortfolioService.swift in Sources */,
 				B1C51BDE2C3CD535004FA294 /* DisplayModelPortfolioView.swift in Sources */,
 				B136CA432C28F2B100A23278 /* TotalsView.swift in Sources */,
