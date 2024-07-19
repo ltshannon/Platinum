@@ -24,8 +24,10 @@ struct StockListView: View {
     @State var item: ItemData = ItemData(symbol: "", basis: 0, price: 0, gainLose: 0, quantity: 0)
     @State var total: Decimal = 0
     @State var totalBasis: Decimal = 0
+    @State var totalDividend: Decimal = 0
     @State var items: [ItemData] = []
     @State var stockList: [String] = []
+    @State var dividendList: [DividendDisplayData] = []
     let columns: [GridItem] = [
                                 GridItem(.fixed(55), spacing: 3),
                                 GridItem(.fixed(40), spacing: 3),
@@ -79,6 +81,58 @@ struct StockListView: View {
                             .foregroundStyle(total < 0 ? .red : .green)
                         Text("")
                     }
+                    if key == .eliteDividendPayers {
+                        Group {
+                            Group {
+                                Text("")
+                                Text("")
+                                Text("")
+                                Text("")
+                                Text("")
+                                Text("")
+                            }
+                            Group {
+                                Text("")
+                                Text("")
+                                Text("Dividends")
+                                Text("")
+                                Text("")
+                                Text("")
+                            }
+                            Group {
+                                Text("")
+                                Text("")
+                                Text("----------")
+                                Text("")
+                                Text("")
+                                Text("")
+                            }
+                            ForEach(dividendList, id: \.id) { dividend in
+                                Text("")
+                                Text("")
+                                Text("\(dividend.symbol)")
+                                Text("\(dividend.date)")
+                                Text("\(dividend.price as NSDecimalNumber, formatter: currencyFormatter)")
+                                Text("")
+                            }
+                            Group {
+                                Text("")
+                                Text("")
+                                Text("")
+                                Text("")
+                                Text("---------")
+                                Text("")
+                            }
+                            Group {
+                                Text("Total")
+                                Text("")
+                                Text("")
+                                Text("")
+                                Text("\(totalDividend as NSDecimalNumber, formatter: currencyFormatter)")
+                                Text("")
+                            }
+                        }
+                    }
                 }
             }
             .refreshable {
@@ -124,6 +178,8 @@ struct StockListView: View {
                     items = portfolioService.breakthroughList
                 case .eliteDividendPayers:
                     items = portfolioService.eliteDividendPayersList
+                    dividendList = portfolioService.eliteDividendPayersDividendList
+                    self.totalDividend = computeDividendTotal(list: dividendList)
                 case .growthInvestor:
                     items = portfolioService.growthInvestorList
                 }
@@ -141,6 +197,12 @@ struct StockListView: View {
             .onReceive(portfolioService.$eliteDividendPayersTotalBasis) { total in
                 if key == .eliteDividendPayers {
                     self.totalBasis = total
+                }
+            }
+            .onReceive(portfolioService.$eliteDividendPayersDividendList) { list in
+                if key == .eliteDividendPayers {
+                    self.dividendList = list
+                    self.totalDividend = computeDividendTotal(list: list)
                 }
             }
             .onReceive(portfolioService.$eliteDividendPayersStockList) { stockList in
@@ -218,6 +280,14 @@ struct StockListView: View {
         refreshStocks()
     }
     
+    func computeDividendTotal(list: [DividendDisplayData]) -> Decimal {
+        var total: Decimal = 0
+        let _ = list.map {
+            total += $0.price
+        }
+        return total
+    }
+    
     func refreshStocks() {
         Task {
             let result = await portfolioService.getPortfolio(listName: key)
@@ -226,6 +296,8 @@ struct StockListView: View {
                 total = result.1
                 stockList = result.2
                 totalBasis = result.3
+                dividendList = result.4
+                totalDividend = computeDividendTotal(list: result.4)
                 switch key {
                 case .acceleratedProfits:
                     portfolioService.acceleratedProfitsList = result.0

@@ -31,6 +31,7 @@ class PortfolioService: ObservableObject {
     @Published var eliteDividendPayersList: [ItemData] = []
     @Published var eliteDividendPayersTotal: Decimal = 0
     @Published var eliteDividendPayersTotalBasis: Decimal = 0
+    @Published var eliteDividendPayersDividendList: [DividendDisplayData] = []
     @Published var eliteDividendPayersStockList: [String] = []
     @Published var growthInvestorList: [ItemData] = []
     @Published var growthInvestorTotal: Decimal = 0
@@ -61,6 +62,7 @@ class PortfolioService: ObservableObject {
             self.eliteDividendPayersTotal = result.1
             self.eliteDividendPayersStockList = result.2
             self.eliteDividendPayersTotalBasis = result.3
+            self.eliteDividendPayersDividendList = result.4
             progress = 75
             result = await getPortfolio(listName: .growthInvestor)
             growthInvestorList = result.0
@@ -72,21 +74,22 @@ class PortfolioService: ObservableObject {
         }
     }
     
-    func getPortfolio(listName: PortfolioType) async -> ([ItemData], Decimal, [String], Decimal) {
+    func getPortfolio(listName: PortfolioType) async -> ([ItemData], Decimal, [String], Decimal, [DividendDisplayData]) {
         
         await MainActor.run {
             isHidden = false
         }
         let stockList = await firebaseService.getStockList(listName: listName.rawValue)
-        let data = await firebaseService.getPortfolioList(stockList: stockList, listName: listName.rawValue)
+        let data = await firebaseService.getPortfolioList(stockList: stockList, listName: listName)
         var items: [ItemData] = []
         for item in data {
-            let temp = ItemData(symbol: item.id ?? "NA", basis: item.basis, price: 0, gainLose: 0, quantity: item.quantity)
+            let temp = ItemData(symbol: item.id ?? "NA", basis: item.basis, price: 0, gainLose: 0, quantity: item.quantity, dividend: item.dividend)
             items.append(temp)
         }
         
         var total: Decimal = 0
         var totalBasis: Decimal = 0
+        var dividendList: [DividendDisplayData] = []
         let string: String = stockList.joined(separator: ",")
         let stockData = await networkService.fetch(tickers: string)
         for item in stockData {
@@ -96,6 +99,11 @@ class PortfolioService: ObservableObject {
                 items[row].gainLose = gainLose
                 total += gainLose
                 totalBasis += items[row].basis * Decimal(items[row].quantity)
+                if listName == .eliteDividendPayers, let dividends = items[row].dividend {
+                    let _ = dividends.map {
+                        dividendList.append(buildDividendList(array: $0, symbol: item.id))
+                    }
+                }
             }
         }
         
@@ -104,7 +112,7 @@ class PortfolioService: ObservableObject {
             self.stockList = modelStock.sorted()
             isHidden = true
         }
-        return (items, total, modelStock, totalBasis)
+        return (items, total, modelStock, totalBasis, dividendList)
     }
     
     func addStock(listName: String, item: ItemData) async {
@@ -123,6 +131,29 @@ class PortfolioService: ObservableObject {
         
         await firebaseService.deleteItem(listName: listName, symbol: symbol)
         
+    }
+    
+    func addDividend(listName: String, symbol: String, dividendDate: Date, dividendAmount: String) async {
+        
+        await firebaseService.addDividend(listName: listName, symbol: symbol, dividendDate: dividendDate, dividendAmount: dividendAmount)
+        
+    }
+    
+    func getDividend(listName: String, symbol: String) async -> [String] {
+        
+        return await firebaseService.getDividend(listName: listName, symbol: symbol)
+        
+    }
+    
+    func buildDividendList(array: String, symbol: String) -> DividendDisplayData {
+        var data = DividendDisplayData(date: "", price: 0)
+        let value = array.split(separator: ",")
+        if value.count == 2 {
+            if let dec = Decimal(string: String(value[1])) {
+                data = DividendDisplayData(symbol: symbol, date: String(value[0]), price: dec)
+            }
+        }
+        return data
     }
     
 }

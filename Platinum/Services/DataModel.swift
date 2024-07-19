@@ -14,6 +14,7 @@ struct ItemData: Identifiable, Encodable, Decodable, Hashable {
     var price: Decimal
     var gainLose: Decimal
     var quantity: Int
+    var dividend: [String]?
 }
 
 class DataModel: ObservableObject {

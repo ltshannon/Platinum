@@ -8,6 +8,7 @@
 import SwiftUI
 import Firebase
 import FirebaseFirestore
+import FirebaseAuth
 
 let database = Firestore.firestore()
 
@@ -19,6 +20,7 @@ struct PortfolioItem: Codable, Identifiable, Hashable {
     @DocumentID var id: String?
     var quantity: Int
     var basis: Decimal
+    var dividend: [String]?
 }
 
 struct ModelStock: Codable, Identifiable, Hashable {
@@ -27,6 +29,30 @@ struct ModelStock: Codable, Identifiable, Hashable {
     var BreakthroughStocks: [String]?
     var EliteDividendPayers: [String]?
     var GrowthInvestor: [String]?
+}
+
+struct DividendDisplayData: Codable, Identifiable, Hashable {
+    var id = UUID().uuidString
+    var symbol = ""
+    var date = ""
+    var price: Decimal = 0
+}
+
+struct DividendPlaceholder: Codable, Identifiable, Hashable {
+    @DocumentID var id: String?
+    var dividend: DividendData
+}
+
+struct DividendData: Codable, Identifiable, Hashable {
+    @DocumentID var id: String?
+    var values: [String]
+}
+
+extension DividendData {
+    init(snapshot: Dictionary<String, Any>) {
+        let item = snapshot["values"] as? [String] ?? []
+        values = item
+    }
 }
 
 struct FirebaseUserInformation: Codable, Identifiable, Hashable {
@@ -87,7 +113,7 @@ class FirebaseService: ObservableObject {
         }
     }
     
-    func getPortfolioList(stockList: [String], listName: String) async -> [PortfolioItem] {
+    func getPortfolioList(stockList: [String], listName: PortfolioType) async -> [PortfolioItem] {
         guard let user = Auth.auth().currentUser else {
             return []
         }
@@ -95,11 +121,23 @@ class FirebaseService: ObservableObject {
         var portfolioItems: [PortfolioItem] = []
         for item in stockList {
             do {
-                let querySnapshot = try await database.collection("users").document(user.uid).collection(listName).document(item).getDocument()
+                var portfolioItem = PortfolioItem(quantity: 0, basis: 0)
+                let querySnapshot = try await database.collection("users").document(user.uid).collection(listName.rawValue).document(item).getDocument()
                 if querySnapshot.exists {
                     let data = try querySnapshot.data(as: PortfolioItem.self)
-                    portfolioItems.append(data)
+                    portfolioItem.quantity = data.quantity
+                    portfolioItem.basis = data.basis
+                    portfolioItem.id = data.id
                 }
+                if listName == .eliteDividendPayers {
+                    let querySnapshot2 = try await database.collection("users").document(user.uid).collection(listName.rawValue).document(item).collection("dividend").document("dividend").getDocument()
+                    if querySnapshot2.exists {
+                        let data = try querySnapshot2.data(as: DividendData.self)
+                        debugPrint("👾", "dividend: \(data)")
+                        portfolioItem.dividend = data.values
+                    }
+                }
+                portfolioItems.append(portfolioItem)
             }
             catch {
                 debugPrint("🧨", "Error reading stock items: \(error.localizedDescription)")
@@ -188,6 +226,51 @@ class FirebaseService: ObservableObject {
             try await database.collection("users").document(user.uid).collection(listName).document(symbol).setData(value)
         } catch {
             debugPrint(String.boom, "addItem: \(error)")
+        }
+    }
+    
+    func getDividend(listName: String, symbol: String) async -> [String] {
+        var returnVal: [String] = []
+        
+        guard let user = Auth.auth().currentUser else {
+            return returnVal
+        }
+        
+        let docRef = database.collection("users").document(user.uid).collection(listName).document(symbol).collection("dividend").document("dividend")
+        do {
+            let document = try await docRef.getDocument()
+            if document.exists {
+                let items = DividendData(snapshot: document.data() ?? [:])
+                returnVal = items.values
+            }
+        } catch {
+            debugPrint(String.boom, "getDividend: \(error)")
+        }
+        return returnVal
+    }
+    
+    func addDividend(listName: String, symbol: String, dividendDate: Date, dividendAmount: String) async {
+        guard let user = Auth.auth().currentUser else {
+            return
+        }
+        
+        let formatter1 = DateFormatter()
+        formatter1.dateStyle = .short
+        var str = formatter1.string(from: dividendDate)
+        str += "," + "\(dividendAmount)"
+        var array: [String] = []
+        array.append(str)
+        let value = [
+            "values": array
+        ] as [String : Any]
+        do {
+            try await database.collection("users").document(user.uid).collection(listName).document(symbol).collection("dividend").document("dividend").updateData(["values": FieldValue.arrayUnion(array)])
+        } catch {
+            do {
+                try await database.collection("users").document(user.uid).collection(listName).document(symbol).collection("dividend").document("dividend").setData(["values": FieldValue.arrayUnion(array)])
+            } catch {
+                debugPrint(String.boom, "addDividend failed: \(error)")
+            }
         }
     }
     

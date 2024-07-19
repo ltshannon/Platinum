@@ -22,42 +22,45 @@ struct StockDetailView: View {
     @State var showAlert = false
     @State var showAlertMessage = ""
     @State var showDeleteAlert = false
+    @State var dividendAmount = ""
+    @State private var showingPopover = false
+    @State var dividendDate = Date()
+    @State var dividendDisplayData: [DividendDisplayData] = []
     let currencyFormatter: NumberFormatter = {
-      let formatter = NumberFormatter()
-      formatter.numberStyle = .currency
-      return formatter
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        return formatter
     }()
+    let numberFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .none
+        return formatter
+    }()
+    
+    let formatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.maximumFractionDigits = 2
+        formatter.minimumFractionDigits = 2
+        formatter.currencyCode = "USD"
+        formatter.numberStyle = .currency
+        return formatter
+    }()
+    var dateFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .long
+        return formatter
+    }
     
     var body: some View {
         VStack {
             Form {
                 Section {
                     TextField("Symbol", text: $symbol)
-                        .onChange(of: symbol) { oldValue, newValue in
-                            if newValue.count <= 4 {
-                                symbol = String(newValue).uppercased()
-                            } else if newValue.count > 4 {
-                                showAlert = true
-                                showAlertMessage = "Invalid symbol"
-                                symbol = oldValue
-                            }
-                        }
                 } header: {
                     Text("Stock Symbol")
                 }
                 Section {
                     TextField("Quantity", text: $quantity)
-                        .onChange(of: quantity) { oldValue, newValue in
-                            if newValue.isEmpty {
-                                quantity = ""
-                                return
-                            }
-                            if Int(newValue) == nil {
-                                showAlert = true
-                                quantity = oldValue
-                                showAlertMessage = "Invalid quantity"
-                            }
-                        }
                         .keyboardType(.numberPad)
                 } header: {
                     Text("Number of shares")
@@ -65,6 +68,8 @@ struct StockDetailView: View {
                 Section {
                     TextField("Basis", text: $basis)
                         .onChange(of: basis) { oldValue, newValue in
+                            debugPrint(oldValue)
+                            debugPrint(newValue)
                             var item = newValue
                             if item.contains("$") {
                                 item = String(newValue.dropFirst())
@@ -79,6 +84,7 @@ struct StockDetailView: View {
                                 basis = oldValue
                             }
                         }
+                        .keyboardType(.decimalPad)
                 } header: {
                     Text("Stock Basis")
                 }
@@ -87,6 +93,18 @@ struct StockDetailView: View {
                 } header: {
                     Text("Stock Price")
                 }
+                if dividendDisplayData.count > 0 {
+                    Section {
+                        ForEach(dividendDisplayData, id: \.id) { item in
+                            HStack {
+                                Text(item.date)
+                                Text(item.price, format: .currency(code: "USD"))
+                            }
+                        }
+                    } header: {
+                        Text("Dividends")
+                    }
+                }
             }
             Button {
                 update()
@@ -94,23 +112,34 @@ struct StockDetailView: View {
                 Text("Update")
             }
             .buttonStyle(.borderedProminent)
-
             Button {
                 showDeleteAlert = true
             } label: {
                 Text("Delete")
             }
             .buttonStyle(.borderedProminent)
-
+            if key == .eliteDividendPayers {
+                Button {
+                    dividendDate = Date()
+                    dividendAmount = ""
+                    showingPopover = true
+                } label: {
+                    Text("Add Dividend")
+                }
+                .buttonStyle(.borderedProminent)
+            }
         }
         .onAppear {
             symbol = item.symbol
             quantity = String(item.quantity)
-            basis = item.basis.formatted(.currency(code: "USD"))
+            basis = formatter.string(for: item.basis) ?? "n/a"
             price = item.price.formatted(.currency(code: "USD"))
             originalBasis = basis
             originalSymbol = symbol
             originalQuantity = quantity
+            Task {
+                await updateDividendValues()
+            }
         }
         .alert(showAlertMessage, isPresented: $showAlert) {
             Button("OK", role: .cancel) { }
@@ -119,6 +148,60 @@ struct StockDetailView: View {
             Button("Yes", role: .cancel) {
                 delete()
             }
+        }
+        .popover(isPresented: $showingPopover) {
+            Form {
+                Section {
+                    DatePicker("", selection: $dividendDate, in: ...Date(), displayedComponents: .date)
+                        .datePickerStyle(GraphicalDatePickerStyle())
+                        .frame(maxHeight: 400)
+                } header: {
+                    Text("Select a date")
+                }
+                Section {
+                    TextField("Amount", text: $dividendAmount)
+                        .keyboardType(.decimalPad)
+                } header: {
+                    Text("Enter an Amount")
+                }
+            }
+            .padding(20)
+            Button("Add", action: addDividend)
+                .buttonStyle(.borderedProminent)
+            Button {
+                showingPopover = false
+            } label: {
+                Text("Cancel")
+            }
+                .buttonStyle(.borderedProminent)
+        }
+    }
+    
+    func addDividend() {
+        showingPopover = false
+        debugPrint("dividendAmount: \(dividendAmount)")
+        debugPrint("dividendDate: \(dividendDate)")
+        Task {
+            await portfolioService.addDividend(listName: key.rawValue, symbol: symbol, dividendDate: dividendDate, dividendAmount: dividendAmount)
+            await updateDividendValues()
+        }
+    }
+    
+    func updateDividendValues() async {
+        let array = await portfolioService.getDividend(listName: key.rawValue, symbol: symbol)
+        var data: [DividendDisplayData] = []
+        let _ = array.map {
+            let value = $0.split(separator: ",")
+            if value.count == 2 {
+                if let dec = Decimal(string: String(value[1])) {
+                    let item = DividendDisplayData(date: String(value[0]), price: dec)
+                    data.append(item)
+                }
+            }
+        }
+        debugPrint("dividend: \(data)")
+        await MainActor.run {
+            dividendDisplayData = data
         }
     }
     
