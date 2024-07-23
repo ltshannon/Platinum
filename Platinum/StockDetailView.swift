@@ -9,6 +9,7 @@ import SwiftUI
 
 struct StockDetailView: View {
     @EnvironmentObject var portfolioService: PortfolioService
+    @EnvironmentObject var appNavigationState: AppNavigationState
     @Environment(\.dismiss) private var dismiss
     var key: PortfolioType
     var item: ItemData
@@ -22,9 +23,7 @@ struct StockDetailView: View {
     @State var showAlert = false
     @State var showAlertMessage = ""
     @State var showDeleteAlert = false
-    @State var dividendAmount = ""
     @State private var showingPopover = false
-    @State var dividendDate = Date()
     @State var dividendDisplayData: [DividendDisplayData] = []
     let currencyFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
@@ -45,12 +44,12 @@ struct StockDetailView: View {
         formatter.numberStyle = .currency
         return formatter
     }()
-    var dateFormatter: DateFormatter {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .long
-        return formatter
-    }
     
+    init(paramters: StockDetailParameters) {
+        self.key = paramters.key
+        self.item = paramters.item
+    }
+
     var body: some View {
         VStack {
             Form {
@@ -106,6 +105,7 @@ struct StockDetailView: View {
                     }
                 }
             }
+            .navigationBarHidden(true)
             Button {
                 update()
             } label: {
@@ -120,14 +120,18 @@ struct StockDetailView: View {
             .buttonStyle(.borderedProminent)
             if key == .eliteDividendPayers {
                 Button {
-                    dividendDate = Date()
-                    dividendAmount = ""
                     showingPopover = true
                 } label: {
                     Text("Add Dividend")
                 }
                 .buttonStyle(.borderedProminent)
             }
+            Button {
+                dismiss()
+            } label: {
+                Text("Cancel")
+            }
+            .buttonStyle(.borderedProminent)
         }
         .onAppear {
             symbol = item.symbol
@@ -137,9 +141,7 @@ struct StockDetailView: View {
             originalBasis = basis
             originalSymbol = symbol
             originalQuantity = quantity
-            Task {
-                await updateDividendValues()
-            }
+            updateDividendValues()
         }
         .alert(showAlertMessage, isPresented: $showAlert) {
             Button("OK", role: .cancel) { }
@@ -149,59 +151,23 @@ struct StockDetailView: View {
                 delete()
             }
         }
-        .popover(isPresented: $showingPopover) {
-            Form {
-                Section {
-                    DatePicker("", selection: $dividendDate, in: ...Date(), displayedComponents: .date)
-                        .datePickerStyle(GraphicalDatePickerStyle())
-                        .frame(maxHeight: 400)
-                } header: {
-                    Text("Select a date")
-                }
-                Section {
-                    TextField("Amount", text: $dividendAmount)
-                        .keyboardType(.decimalPad)
-                } header: {
-                    Text("Enter an Amount")
+        .sheet(isPresented: $showingPopover, onDismiss: updateDividendValues) {
+            DividendCreateView(key: key, symbol: symbol)
+        }
+        .onReceive(portfolioService.$eliteDividendPayersDividendList) { list in
+            var newList: [DividendDisplayData] = []
+            let _ = list.map {
+                if $0.symbol == symbol {
+                    newList.append($0)
                 }
             }
-            .padding(20)
-            Button("Add", action: addDividend)
-                .buttonStyle(.borderedProminent)
-            Button {
-                showingPopover = false
-            } label: {
-                Text("Cancel")
-            }
-                .buttonStyle(.borderedProminent)
+            dividendDisplayData = newList
         }
     }
     
-    func addDividend() {
-        showingPopover = false
-        debugPrint("dividendAmount: \(dividendAmount)")
-        debugPrint("dividendDate: \(dividendDate)")
+    func updateDividendValues() {
         Task {
-            await portfolioService.addDividend(listName: key.rawValue, symbol: symbol, dividendDate: dividendDate, dividendAmount: dividendAmount)
-            await updateDividendValues()
-        }
-    }
-    
-    func updateDividendValues() async {
-        let array = await portfolioService.getDividend(listName: key.rawValue, symbol: symbol)
-        var data: [DividendDisplayData] = []
-        let _ = array.map {
-            let value = $0.split(separator: ",")
-            if value.count == 2 {
-                if let dec = Decimal(string: String(value[1])) {
-                    let item = DividendDisplayData(date: String(value[0]), price: dec)
-                    data.append(item)
-                }
-            }
-        }
-        debugPrint("dividend: \(data)")
-        await MainActor.run {
-            dividendDisplayData = data
+            await portfolioService.getDividend(listName: key.rawValue, symbol: symbol)
         }
     }
     
@@ -221,6 +187,8 @@ struct StockDetailView: View {
                 portfolioService.eliteDividendPayersList = result.0
                 portfolioService.eliteDividendPayersTotal = result.1
                 portfolioService.eliteDividendPayersStockList = result.2
+                portfolioService.eliteDividendPayersTotalBasis = result.3
+                portfolioService.eliteDividendPayersDividendList = result.4
             case .growthInvestor:
                 portfolioService.growthInvestorList = result.0
                 portfolioService.growthInvestorTotal = result.1
@@ -237,17 +205,17 @@ struct StockDetailView: View {
         }
         
         Task {
+            dismiss()
             await portfolioService.updateStock(listName: key.rawValue, symbol: symbol, originalSymbol: originalSymbol, quantity: Int(quantity) ?? 0, basis: basis)
             await updatePortfolio(key: key)
-            dismiss()
         }
     }
     
     func delete() {
         Task {
+            dismiss()
             await portfolioService.deleteStock(listName: key.rawValue, symbol: symbol)
             await updatePortfolio(key: key)
-            dismiss()
         }
     }
     

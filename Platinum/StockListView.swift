@@ -16,12 +16,12 @@ let currencyFormatter: NumberFormatter = {
 
 struct StockListView: View {
     @EnvironmentObject var portfolioService: PortfolioService
+    @EnvironmentObject var appNavigationState: AppNavigationState
     var key: PortfolioType
     @StateObject var networkService = NetworkService()
     @State var showingSheet: Bool = false
     @State var firstTime = true
-    @State var showSecondView: Bool = false
-    @State var item: ItemData = ItemData(symbol: "", basis: 0, price: 0, gainLose: 0, quantity: 0)
+    @State var item: ItemData = ItemData(symbol: "Noname", basis: 0, price: 0, gainLose: 0, quantity: 0)
     @State var total: Decimal = 0
     @State var totalBasis: Decimal = 0
     @State var totalDividend: Decimal = 0
@@ -38,7 +38,7 @@ struct StockListView: View {
     ]
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $appNavigationState.dividendNavigation) {
             ScrollView {
                 LazyVGrid(columns: columns, alignment: .leading) {
                     Group {
@@ -58,8 +58,9 @@ struct StockListView: View {
                         Text("\(abs(item.gainLose) as NSDecimalNumber, formatter: currencyFormatter)")
                             .foregroundStyle(item.gainLose < 0 ?.red : .green)
                         Button {
-                            self.item = item
-                            showSecondView.toggle()
+                            let paramters = StockDetailParameters(key: key, item: item)
+                            appNavigationState.stockDetailView(parameters: paramters)
+
                         } label: {
                             Image(systemName: "pencil")
                         }
@@ -113,7 +114,12 @@ struct StockListView: View {
                                 Text("\(dividend.symbol)")
                                 Text("\(dividend.date)")
                                 Text("\(dividend.price as NSDecimalNumber, formatter: currencyFormatter)")
-                                Text("")
+                                Button {
+                                    let parameters = DividendEditParameters(key: key, item: item, dividendDisplayData: dividend)
+                                    appNavigationState.dividendEditView(parameters: parameters)
+                                } label: {
+                                    Image(systemName: "pencil")
+                                }
                             }
                             Group {
                                 Text("")
@@ -138,9 +144,6 @@ struct StockListView: View {
             .refreshable {
                 pullToRefresh()
             }
-            .navigationDestination(isPresented: $showSecondView) {
-                StockDetailView(key: key, item: item)
-             }
             .padding([.leading], 5)
             Spacer()
             Button {
@@ -159,9 +162,6 @@ struct StockListView: View {
             .background {
                 NavigationStyleLayer()
             }
-//            .navigationBarItems(trailing:
-//                ProgressView(value: 25.0, total: 100)
-//            )
             .toolbar {
               ToolbarItem(placement: .navigationBarTrailing) {
                   if portfolioService.isHidden == false {
@@ -179,7 +179,7 @@ struct StockListView: View {
                 case .eliteDividendPayers:
                     items = portfolioService.eliteDividendPayersList
                     dividendList = portfolioService.eliteDividendPayersDividendList
-                    self.totalDividend = computeDividendTotal(list: dividendList)
+                    totalDividend = portfolioService.computeDividendTotal(list: dividendList)
                 case .growthInvestor:
                     items = portfolioService.growthInvestorList
                 }
@@ -202,7 +202,7 @@ struct StockListView: View {
             .onReceive(portfolioService.$eliteDividendPayersDividendList) { list in
                 if key == .eliteDividendPayers {
                     self.dividendList = list
-                    self.totalDividend = computeDividendTotal(list: list)
+                    totalDividend = portfolioService.computeDividendTotal(list: list)
                 }
             }
             .onReceive(portfolioService.$eliteDividendPayersStockList) { stockList in
@@ -273,19 +273,21 @@ struct StockListView: View {
             .fullScreenCover(isPresented: $showingSheet, onDismiss: didDismiss) {
                 AddingNewStockView(key: key, stockList: stockList)
             }
+            .navigationDestination(for: DividendNavDestination.self) { state in
+                switch state {
+                case .stockDetailView(let parameters):
+                    StockDetailView(paramters: parameters)
+                case .dividendCreateView(let paramters):
+                    EmptyView()
+                case .dividendEditView(let parameters):
+                    DividendEditView(parameters: parameters)
+                }
+            }
         }
     }
     
     func pullToRefresh() {
         refreshStocks()
-    }
-    
-    func computeDividendTotal(list: [DividendDisplayData]) -> Decimal {
-        var total: Decimal = 0
-        let _ = list.map {
-            total += $0.price
-        }
-        return total
     }
     
     func refreshStocks() {
@@ -297,7 +299,7 @@ struct StockListView: View {
                 stockList = result.2
                 totalBasis = result.3
                 dividendList = result.4
-                totalDividend = computeDividendTotal(list: result.4)
+                totalDividend = portfolioService.computeDividendTotal(list: result.4)
                 switch key {
                 case .acceleratedProfits:
                     portfolioService.acceleratedProfitsList = result.0
@@ -311,6 +313,8 @@ struct StockListView: View {
                     portfolioService.eliteDividendPayersList = result.0
                     portfolioService.eliteDividendPayersTotal = result.1
                     portfolioService.eliteDividendPayersStockList = result.2
+                    portfolioService.eliteDividendPayersTotalBasis = result.3
+                    portfolioService.eliteDividendPayersDividendList = result.4
                 case .growthInvestor:
                     portfolioService.growthInvestorList = result.0
                     portfolioService.growthInvestorTotal = result.1

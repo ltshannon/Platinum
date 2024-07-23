@@ -24,6 +24,7 @@ struct PlatinumApp: App {
     @StateObject var userAuth = Authentication.shared
     @StateObject var firebaseService = FirebaseService.shared
     @StateObject var platinumGrowthModel = PlatinumGrowthModel.shared
+    @StateObject var appNavigationState = AppNavigationState()
     
     var body: some Scene {
         WindowGroup {
@@ -33,6 +34,7 @@ struct PlatinumApp: App {
                 .environmentObject(firebaseService)
                 .environmentObject(portfolioService)
                 .environmentObject(platinumGrowthModel)
+                .environmentObject(appNavigationState)
         }
     }
 }

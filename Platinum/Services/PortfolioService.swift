@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-enum PortfolioType: String, CaseIterable, Identifiable {
+enum PortfolioType: String, CaseIterable, Identifiable, Encodable {
     case acceleratedProfits = "AcceleratedProfits"
     case breakthroughStocks =  "BreakthroughStocks"
     case eliteDividendPayers = "EliteDividendPayers"
@@ -17,6 +17,7 @@ enum PortfolioType: String, CaseIterable, Identifiable {
     var id: String { return self.rawValue }
 }
 
+@MainActor
 class PortfolioService: ObservableObject {
     var firebaseService = FirebaseService.shared
     var networkService = NetworkService()
@@ -118,31 +119,51 @@ class PortfolioService: ObservableObject {
     func addStock(listName: String, item: ItemData) async {
         
         await firebaseService.addItem(listName: listName, symbol: item.symbol, quantity: item.quantity, basis: item.basis)
-        
     }
     
     func updateStock(listName: String, symbol: String, originalSymbol: String, quantity: Int, basis: String) async {
         
         await firebaseService.updateItem(listName: listName, symbol: symbol, originalSymbol: originalSymbol, quantity: quantity, basis: basis)
-        
     }
     
     func deleteStock(listName: String, symbol: String) async {
         
         await firebaseService.deleteItem(listName: listName, symbol: symbol)
-        
     }
     
     func addDividend(listName: String, symbol: String, dividendDate: Date, dividendAmount: String) async {
         
         await firebaseService.addDividend(listName: listName, symbol: symbol, dividendDate: dividendDate, dividendAmount: dividendAmount)
-        
     }
     
-    func getDividend(listName: String, symbol: String) async -> [String] {
+    func getDividend(listName: String, symbol: String) async {
         
-        return await firebaseService.getDividend(listName: listName, symbol: symbol)
+        let array = await firebaseService.getDividend(listName: listName, symbol: symbol)
+        var data: [DividendDisplayData] = []
+        let _ = array.map {
+            let value = $0.split(separator: ",")
+            if value.count == 2 {
+                if let dec = Decimal(string: String(value[1])) {
+                    let item = DividendDisplayData(symbol: symbol, date: String(value[0]), price: dec)
+                    data.append(item)
+                }
+            }
+        }
+        var temp = eliteDividendPayersDividendList.filter { $0.symbol != symbol }
+        temp += data
+        temp = temp.sorted { $0.symbol < $1.symbol }
+        await MainActor.run {
+            self.eliteDividendPayersDividendList = temp
+        }
+    }
+
+    func deleteDividend(listName: String, symbol: String, dividendDisplayData: DividendDisplayData) async {
+        await firebaseService.deleteDividend(listName: listName, symbol: symbol, dividendDisplayData: dividendDisplayData)
+    }
+    
+    func updateDividend(listName: String, symbol: String, dividendDisplayData: DividendDisplayData, dividendDate: Date, dividendAmount: String) async {
         
+        await firebaseService.updateDividend(listName: listName, symbol: symbol, dividendDisplayData: dividendDisplayData, dividendAmount: dividendAmount, dividendDate: dividendDate)
     }
     
     func buildDividendList(array: String, symbol: String) -> DividendDisplayData {
@@ -154,6 +175,14 @@ class PortfolioService: ObservableObject {
             }
         }
         return data
+    }
+    
+    func computeDividendTotal(list: [DividendDisplayData]) -> Decimal {
+        var total: Decimal = 0
+        let _ = list.map {
+            total += $0.price
+        }
+        return total
     }
     
 }

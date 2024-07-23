@@ -63,29 +63,20 @@ struct AddingNewStockView: View {
                         Text("Stock Basis")
                     }
                 }
+                Button {
+                    add()
+                } label: {
+                    Text("Add")
+                }
+                .buttonStyle(.borderedProminent)
+                Button {
+                    dismiss()
+                } label: {
+                    Text("Cancel")
+                }
+                .buttonStyle(.borderedProminent)
             }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    HStack {
-                        Text(navigationBarTitle).font(.headline)
-                    }
-                }
-                ToolbarItem(placement: .cancellationAction) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Text("Cancel")
-                    }
-                }
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                       add()
-                    } label: {
-                        Text("Add")
-                    }
-                }
-            }
+            .navigationBarHidden(true)
             .onAppear {
                 if firstTime == false {
                     firstTime = true
@@ -104,8 +95,8 @@ struct AddingNewStockView: View {
     func add() {
         let item = ItemData(symbol: selectedStock, basis: Decimal(string: basis) ?? 0, price: 0, gainLose: 0, quantity: Int(quantity) ?? 0)
         Task {
-            await portfolioService.addStock(listName: key.rawValue, item: item)
             dismiss()
+            await portfolioService.addStock(listName: key.rawValue, item: item)
         }
     }
 }

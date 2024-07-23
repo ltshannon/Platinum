@@ -31,7 +31,7 @@ struct ModelStock: Codable, Identifiable, Hashable {
     var GrowthInvestor: [String]?
 }
 
-struct DividendDisplayData: Codable, Identifiable, Hashable {
+struct DividendDisplayData: Codable, Identifiable, Hashable, Equatable {
     var id = UUID().uuidString
     var symbol = ""
     var date = ""
@@ -249,10 +249,7 @@ class FirebaseService: ObservableObject {
         return returnVal
     }
     
-    func addDividend(listName: String, symbol: String, dividendDate: Date, dividendAmount: String) async {
-        guard let user = Auth.auth().currentUser else {
-            return
-        }
+    func buildDividendArrayElement(dividendDate: Date, dividendAmount: String) -> [String] {
         
         let formatter1 = DateFormatter()
         formatter1.dateStyle = .short
@@ -260,9 +257,15 @@ class FirebaseService: ObservableObject {
         str += "," + "\(dividendAmount)"
         var array: [String] = []
         array.append(str)
-        let value = [
-            "values": array
-        ] as [String : Any]
+        return array
+    }
+    
+    func addDividend(listName: String, symbol: String, dividendDate: Date, dividendAmount: String) async {
+        guard let user = Auth.auth().currentUser else {
+            return
+        }
+        
+        let array = buildDividendArrayElement(dividendDate: dividendDate, dividendAmount: dividendAmount)
         do {
             try await database.collection("users").document(user.uid).collection(listName).document(symbol).collection("dividend").document("dividend").updateData(["values": FieldValue.arrayUnion(array)])
         } catch {
@@ -272,6 +275,40 @@ class FirebaseService: ObservableObject {
                 debugPrint(String.boom, "addDividend failed: \(error)")
             }
         }
+    }
+    
+    func deleteDividend(listName: String, symbol: String, dividendDisplayData: DividendDisplayData) async {
+        guard let user = Auth.auth().currentUser else {
+            return
+        }
+        
+        let str = dividendDisplayData.date + ",\(dividendDisplayData.price)"
+        var array: [String] = []
+        array.append(str)
+        do {
+            try await database.collection("users").document(user.uid).collection(listName).document(symbol).collection("dividend").document("dividend").updateData(["values": FieldValue.arrayRemove(array)])
+        } catch {
+            debugPrint(String.boom, "deleteDividend failed: \(error)")
+        }
+        
+    }
+    
+    func updateDividend(listName: String, symbol: String, dividendDisplayData: DividendDisplayData, dividendAmount: String, dividendDate: Date) async {
+        guard let user = Auth.auth().currentUser else {
+            return
+        }
+        
+        let str = dividendDisplayData.date + ",\(dividendDisplayData.price)"
+        var array: [String] = []
+        array.append(str)
+        let array2 = buildDividendArrayElement(dividendDate: dividendDate, dividendAmount: dividendAmount)
+        do {
+            try await database.collection("users").document(user.uid).collection(listName).document(symbol).collection("dividend").document("dividend").updateData(["values": FieldValue.arrayRemove(array)])
+            try await database.collection("users").document(user.uid).collection(listName).document(symbol).collection("dividend").document("dividend").updateData(["values": FieldValue.arrayUnion(array2)])
+        } catch {
+            debugPrint(String.boom, "updateDividend failed: \(error)")
+        }
+        
     }
     
     func updateItem(listName: String, symbol: String, originalSymbol: String, quantity: Int, basis: String) async {

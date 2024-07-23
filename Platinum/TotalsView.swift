@@ -27,6 +27,8 @@ struct TotalsView: View {
     @State var total: Decimal = 0
     @State var totalBasis: Decimal = 0
     @State var totalValue: Decimal = 0
+    @State var totalDividend: Decimal = 0
+    @State var dividendList: [DividendDisplayData] = []
     let columns: [GridItem] = [
                                 GridItem(.fixed(250), spacing: 5),
                                 GridItem(.fixed(150), spacing: 5)
@@ -61,6 +63,11 @@ struct TotalsView: View {
                                 Text("$\(growthInvestorTotal as NSDecimalNumber, formatter: currencyFormatter)")
                                     .foregroundStyle(growthInvestorTotal < 0 ?.red : .green)
                             }
+                        }
+                        Group {
+                            Text("Dividends")
+                            Text("$\(totalDividend as NSDecimalNumber, formatter: currencyFormatter)")
+                                .foregroundStyle(total < 0 ?.red : .green)
                         }
                         Group {
                             Text("")
@@ -106,6 +113,8 @@ struct TotalsView: View {
                 breakthroughTotalBasis = portfolioService.breakthroughTotalBasis
                 eliteDividendPayersTotalBasis = portfolioService.eliteDividendPayersTotalBasis
                 growthInvestorTotalBasis = portfolioService.growthInvestorTotalBasis
+                dividendList = portfolioService.eliteDividendPayersDividendList
+                totalDividend = portfolioService.computeDividendTotal(list: dividendList)
                 computeTotal()
             }
 
@@ -141,11 +150,15 @@ struct TotalsView: View {
                 growthInvestorTotalBasis = total
                 computeTotal()
             }
+            .onReceive(portfolioService.$eliteDividendPayersDividendList) { list in
+                self.dividendList = list
+                totalDividend = portfolioService.computeDividendTotal(list: list)
+            }
         }
     }
     
     func computeTotal() {
-        total = acceleratedProfitsTotal + breakthroughTotal + eliteDividendPayersTotal + growthInvestorTotal
+        total = acceleratedProfitsTotal + breakthroughTotal + eliteDividendPayersTotal + growthInvestorTotal + totalDividend
         totalBasis = acceleratedProfitsTotalBasis + breakthroughTotalBasis + eliteDividendPayersTotalBasis + growthInvestorTotalBasis
         totalValue = total + totalBasis
     }
