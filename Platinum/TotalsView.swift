@@ -37,6 +37,11 @@ struct TotalsView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
+                if portfolioService.showingProgress {
+                    ProgressView("Loading...")
+                        .progressViewStyle(CircularProgressViewStyle(tint: Color.blue))
+                        .padding(.trailing, 30)
+                }
                 VStack(alignment: .leading) {
                     LazyVGrid(columns: columns, alignment: .leading) {
                         Group {
@@ -90,10 +95,6 @@ struct TotalsView: View {
                         }
                     }
                     Spacer()
-                    if portfolioService.isHidden == false {
-                        ProgressView("Loading...", value: portfolioService.progress, total: 100)
-                            .padding(.trailing, 30)
-                    }
                 }
             }
             .padding(.leading, 30)

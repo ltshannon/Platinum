@@ -40,6 +40,11 @@ struct StockListView: View {
     var body: some View {
         NavigationStack(path: $appNavigationState.dividendNavigation) {
             ScrollView {
+                if portfolioService.showingProgress {
+                    ProgressView("Loading...")
+                        .progressViewStyle(CircularProgressViewStyle(tint: Color.blue))
+                        .padding(.trailing, 30)
+                }
                 LazyVGrid(columns: columns, alignment: .leading) {
                     Group {
                         Text("Sym")
@@ -162,14 +167,6 @@ struct StockListView: View {
             .background {
                 NavigationStyleLayer()
             }
-            .toolbar {
-              ToolbarItem(placement: .navigationBarTrailing) {
-                  if portfolioService.isHidden == false {
-                      ProgressView()
-                          .progressViewStyle(CircularProgressViewStyle(tint: Color.blue))
-                  }
-              }
-            }
             .onAppear {
                 switch key {
                 case .acceleratedProfits:
@@ -273,6 +270,10 @@ struct StockListView: View {
             .fullScreenCover(isPresented: $showingSheet, onDismiss: didDismiss) {
                 AddingNewStockView(key: key, stockList: stockList)
             }
+//            .fullScreenCover(isPresented: $portfolioService.showingProgress) {
+//                ProgressView()
+//                    .progressViewStyle(CircularProgressViewStyle(tint: Color.blue))
+//            }
             .navigationDestination(for: DividendNavDestination.self) { state in
                 switch state {
                 case .stockDetailView(let parameters):
@@ -292,6 +293,11 @@ struct StockListView: View {
     
     func refreshStocks() {
         Task {
+            await MainActor.run {
+                portfolioService.progress = 0
+                portfolioService.showingProgress = true
+                portfolioService.progress = 100
+            }
             let result = await portfolioService.getPortfolio(listName: key)
             await MainActor.run {
                 items = result.0
@@ -320,6 +326,7 @@ struct StockListView: View {
                     portfolioService.growthInvestorTotal = result.1
                     portfolioService.growthInvestorStockList = result.2
                 }
+                portfolioService.showingProgress = false
             }
         }
     }

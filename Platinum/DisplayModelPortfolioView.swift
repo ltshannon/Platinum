@@ -9,6 +9,7 @@ import SwiftUI
 
 struct DisplayModelPortfolioView: View {
     @EnvironmentObject var platinumGrowthModel: PlatinumGrowthModel
+    @EnvironmentObject var portfolioService: PortfolioService
     @EnvironmentObject var firebaseService: FirebaseService
     @EnvironmentObject var userAuth: Authentication
     @State var showingSheet = false
@@ -16,6 +17,13 @@ struct DisplayModelPortfolioView: View {
     @State var segment: PlatinumGrowType = .notSet
     @State var showingAlert = false
     @State var alertMessage = ""
+    let columns: [GridItem] = [
+                                GridItem(.fixed(55), spacing: 3),
+                                GridItem(.fixed(100), spacing: 3),
+                                GridItem(.fixed(80), spacing: 3),
+                                GridItem(.fixed(55), spacing: 3),
+                                GridItem(.fixed(80), spacing: 3),
+    ]
     
     var body: some View {
         VStack {
@@ -38,12 +46,29 @@ struct DisplayModelPortfolioView: View {
                                 AllocationToolView(investments: model.allocationTool[0].investments)
                             }
                         } else if segment == .sevenDayRotation {
-                            ForEach(model.sevenDayRotation, id: \.id) { item in
-                                HStack {
+                            LazyVGrid(columns: columns, alignment: .leading) {
+                                Group {
+                                    Text("Sym")
+                                    Text("Date")
+                                    Text("Below")
+                                    Text("Own")
+                                    Text("Basis")
+                                }
+                                Group {
+                                    Text("----")
+                                    Text("-----")
+                                    Text("-----")
+                                    Text("-----")
+                                    Text("-----")
+                                }
+                                ForEach(model.sevenDayRotation, id: \.id) { item in
                                     Text(item.symbol)
-                                    Text(item.stockAction.rawValue)
                                         .foregroundStyle(item.stockAction.getActionColor(stockAction: item.stockAction))
-                                    Spacer()
+                                    Text(item.buyDate)
+                                    Text(item.buyBelow)
+                                    Text(item.inPorfilio ? "Yes" : "No")
+                                        .foregroundStyle(item.inPorfilio ? .black : .red)
+                                    Text("\(item.portfilioBasis as NSDecimalNumber, formatter: currencyFormatter)")
                                 }
                             }
                         }
@@ -94,6 +119,12 @@ struct DisplayModelPortfolioView: View {
         .onChange(of: platinumGrowthModel.allocationAndModeData?.modelPortfolio) {
             updateModelPortfolio(data: platinumGrowthModel.allocationAndModeData?.modelPortfolio)
         }
+        .onChange(of: platinumGrowthModel.allocationAndModeData?.sevenDayRotation) {
+            if let temp = platinumGrowthModel.allocationAndModeData {
+                let data = temp.sevenDayRotation
+                updateSevenDayRotation(data: data)
+            }
+        }
     }
     
     func didDismiss() {
@@ -124,6 +155,28 @@ struct DisplayModelPortfolioView: View {
                 }
                 await MainActor.run {
                     platinumGrowthModel.allocationAndModeData?.modelPortfolio = modelPortfolios
+                }
+            }
+        }
+    }
+    
+    func updateSevenDayRotation(data: [SevenDayRotationData]) {
+        var sevenDayData = data
+        if sevenDayData.count > 0 {
+            Task {
+                for type in PortfolioType.allCases {
+                    let stockList = await firebaseService.getStockList(listName: type.rawValue)
+                    for (index, item) in sevenDayData.enumerated() {
+                        if stockList.contains(item.symbol) {
+                            sevenDayData[index].inPorfilio = true
+                            if let dec = portfolioService.getBasisForStockInPortfilio(portfolioType: type, symbol: item.symbol) {
+                                sevenDayData[index].portfilioBasis = dec
+                            }
+                        }
+                    }
+                }
+                await MainActor.run {
+                    platinumGrowthModel.allocationAndModeData?.sevenDayRotation = sevenDayData
                 }
             }
         }

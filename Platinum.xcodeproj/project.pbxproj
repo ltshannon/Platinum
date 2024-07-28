@@ -127,6 +127,7 @@
 			children = (
 				B136CA182C2383D000A23278 /* Services */,
 				B1FD8AD82C1A5C89000D0F37 /* PlatinumApp.swift */,
+				B136CA1F2C2387B800A23278 /* SignInView.swift */,
 				B18432A62C4EE09600781E04 /* AppNavigationState.swift */,
 				B1FD8ADA2C1A5C89000D0F37 /* ContentView.swift */,
 				B136CA032C1E692700A23278 /* StockListView.swift */,
@@ -134,7 +135,6 @@
 				B18432A22C4CB03F00781E04 /* DividendCreateView.swift */,
 				B18432A02C4C726600781E04 /* DividendEditView.swift */,
 				B136CA072C1E6A9600A23278 /* AddingNewStockView.swift */,
-				B136CA1F2C2387B800A23278 /* SignInView.swift */,
 				B136CA212C23A82D00A23278 /* SettingsView.swift */,
 				B1C51BDD2C3CD535004FA294 /* DisplayModelPortfolioView.swift */,
 				B17840692C40AC9B00B55B96 /* AllocationToolView.swift */,
@@ -418,7 +418,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.5;
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.breakawaydesign.Platinum;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
@@ -460,7 +460,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.5;
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.breakawaydesign.Platinum;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;

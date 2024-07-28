@@ -41,7 +41,7 @@ struct ModelPortfolioData: Identifiable {
     var inPorfilio = false
 }
 
-struct SevenDayRotationData: Identifiable {
+struct SevenDayRotationData: Identifiable, Equatable {
     var id: String = UUID().uuidString
     var symbol: String = ""
     var stockAction: StockAction = .none
@@ -51,6 +51,8 @@ struct SevenDayRotationData: Identifiable {
     var returnPercent: String = ""
     var recentPrice: String = ""
     var buyBelow: String = ""
+    var inPorfilio = false
+    var portfilioBasis: Decimal = 0
 }
 
 struct ModelPortfolio: Identifiable, Equatable {
@@ -92,7 +94,7 @@ enum StockAction: String, CaseIterable {
     case new = "NEW"
     case sell = "SELL"
     case topStock = "TOP STOCK"
-    case none = "none"
+    case none = ""
     case unknown = "UNKNOWN"
 }
 
@@ -103,7 +105,7 @@ extension StockAction {
         case .new: return .green
         case .sell: return .red
         case .topStock: return .yellow
-        case .none: return .clear
+        case .none: return .black
         case .unknown: return .orange
         }
     }

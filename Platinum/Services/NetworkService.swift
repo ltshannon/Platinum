@@ -26,7 +26,7 @@ class NetworkService: ObservableObject {
                 let session = URLSession(configuration: .default)
                 let response = try await session.data(from: url)
                 let data = try JSONDecoder().decode([StockData].self, from: response.0)
-                debugPrint("StockData: \(data)")
+//                debugPrint("StockData: \(data)")
                 return data
             }
         }

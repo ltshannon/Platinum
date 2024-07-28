@@ -39,46 +39,46 @@ class PortfolioService: ObservableObject {
     @Published var growthInvestorTotalBasis: Decimal = 0
     @Published var growthInvestorStockList: [String] = []
     @Published var stockList: [String] = []
-    @Published var isHidden = true
+    @Published var showingProgress = false
     @Published var progress = 0.0
     
     func loadPortfolios() {
         Task { @MainActor in
-            isHidden = false
+            showingProgress = true
             progress = 0.0
-            var result = await getPortfolio(listName: .acceleratedProfits)
-            acceleratedProfitsList = result.0
-            acceleratedProfitsTotal = result.1
-            acceleratedProfitsStockList = result.2
-            acceleratedProfitsTotalBasis = result.3
+            async let result1 = getPortfolio(listName: .acceleratedProfits)
+            async let result2 = getPortfolio(listName: .breakthroughStocks)
+            async let result3 = getPortfolio(listName: .eliteDividendPayers)
+            async let result4 = getPortfolio(listName: .growthInvestor)
+            acceleratedProfitsList = await result1.0
+            acceleratedProfitsTotal = await result1.1
+            acceleratedProfitsStockList = await result1.2
+            acceleratedProfitsTotalBasis = await result1.3
             progress = 25
-            result = await getPortfolio(listName: .breakthroughStocks)
-            breakthroughList = result.0
-            breakthroughTotal = result.1
-            breakthroughStockList = result.2
-            breakthroughTotalBasis = result.3
+            breakthroughList = await result2.0
+            breakthroughTotal = await result2.1
+            breakthroughStockList = await result2.2
+            breakthroughTotalBasis = await result2.3
             progress = 50
-            result = await getPortfolio(listName: .eliteDividendPayers)
-            self.eliteDividendPayersList = result.0
-            self.eliteDividendPayersTotal = result.1
-            self.eliteDividendPayersStockList = result.2
-            self.eliteDividendPayersTotalBasis = result.3
-            self.eliteDividendPayersDividendList = result.4
+            self.eliteDividendPayersList = await result3.0
+            self.eliteDividendPayersTotal = await result3.1
+            self.eliteDividendPayersStockList = await result3.2
+            self.eliteDividendPayersTotalBasis = await result3.3
+            self.eliteDividendPayersDividendList = await result3.4
             progress = 75
-            result = await getPortfolio(listName: .growthInvestor)
-            growthInvestorList = result.0
-            growthInvestorTotal = result.1
-            growthInvestorStockList = result.2
-            growthInvestorTotalBasis = result.3
+            growthInvestorList = await result4.0
+            growthInvestorTotal = await result4.1
+            growthInvestorStockList = await result4.2
+            growthInvestorTotalBasis = await result4.3
             progress = 100
-            isHidden = true
+            showingProgress = false
         }
     }
     
     func getPortfolio(listName: PortfolioType) async -> ([ItemData], Decimal, [String], Decimal, [DividendDisplayData]) {
         
         await MainActor.run {
-            isHidden = false
+//            showingProgress = true
         }
         let stockList = await firebaseService.getStockList(listName: listName.rawValue)
         let data = await firebaseService.getPortfolioList(stockList: stockList, listName: listName)
@@ -111,7 +111,7 @@ class PortfolioService: ObservableObject {
         let modelStock = await firebaseService.getModelStockList(listName: listName)
         await MainActor.run {
             self.stockList = modelStock.sorted()
-            isHidden = true
+//            showingProgress = false
         }
         return (items, total, modelStock, totalBasis, dividendList)
     }
@@ -183,6 +183,25 @@ class PortfolioService: ObservableObject {
             total += $0.price
         }
         return total
+    }
+    
+    func getBasisForStockInPortfilio(portfolioType: PortfolioType, symbol: String) -> Decimal? {
+        var list: [ItemData] = []
+        switch portfolioType {
+        case .acceleratedProfits:
+            list = acceleratedProfitsList;
+        case .breakthroughStocks:
+            list = breakthroughList
+        case .eliteDividendPayers:
+            list = eliteDividendPayersList
+        case.growthInvestor:
+            list = growthInvestorList
+        }
+        let items = list.filter { $0.symbol == symbol }
+        if let item = items.first {
+            return item.basis
+        }
+        return nil
     }
     
 }

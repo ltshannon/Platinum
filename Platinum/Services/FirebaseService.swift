@@ -133,7 +133,7 @@ class FirebaseService: ObservableObject {
                     let querySnapshot2 = try await database.collection("users").document(user.uid).collection(listName.rawValue).document(item).collection("dividend").document("dividend").getDocument()
                     if querySnapshot2.exists {
                         let data = try querySnapshot2.data(as: DividendData.self)
-                        debugPrint("👾", "dividend: \(data)")
+//                        debugPrint("👾", "dividend: \(data)")
                         portfolioItem.dividend = data.values
                     }
                 }
