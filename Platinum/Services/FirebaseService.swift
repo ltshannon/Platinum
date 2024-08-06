@@ -29,6 +29,8 @@ struct ModelStock: Codable, Identifiable, Hashable {
     var BreakthroughStocks: [String]?
     var EliteDividendPayers: [String]?
     var GrowthInvestor: [String]?
+    var Buy: [String]?
+    var Sell: [String]?
 }
 
 struct DividendDisplayData: Codable, Identifiable, Hashable, Equatable {
@@ -167,11 +169,12 @@ class FirebaseService: ObservableObject {
         catch {
             debugPrint("🧨", "Error reading getStockList: \(error.localizedDescription)")
         }
+        items.sort()
         return items
 
     }
     
-    func getModelStockList(listName: PortfolioType) async -> [String] {
+    func getModelSymbolList(listName: PortfolioType) async -> [String] {
         var items: [String] = []
         
         let docRef = database.collection("ModelPortfolio").document(listName.rawValue)
@@ -198,18 +201,58 @@ class FirebaseService: ObservableObject {
                         if let values = data.GrowthInvestor {
                             items = values
                         }
+                    case PortfolioType.buy.rawValue:
+                        if let values = data.Buy {
+                            items = values
+                        }
+                    case PortfolioType.sell.rawValue:
+                        if let values = data.Sell {
+                            items = values
+                        }
                     default:
                         items = []
                     }
                 }
             } else {
-                debugPrint("🧨", "Error reading getModelStockList Document does not exist")
+                debugPrint("🧨", "Error reading getModelSymbolList Document does not exist")
             }
         } catch {
-            debugPrint("🧨", "Error reading getModelStockList \(error.localizedDescription)")
+            debugPrint("🧨", "Error reading getModelSymbolList \(error.localizedDescription)")
         }
+        items.sort()
         return items
 
+    }
+    
+    func addSymbol(listName: String, symbol: String) async {
+        
+        do {
+            try await database.collection("ModelPortfolio").document(listName).updateData([listName: FieldValue.arrayUnion([symbol])])
+        } catch {
+            debugPrint(String.boom, "addSymbol failed: \(error)")
+        }
+        
+    }
+    
+    func updateSymbol(listName: String, oldSymbol: String, newSymbol: String) async {
+        
+        do {
+            try await database.collection("ModelPortfolio").document(listName).updateData([listName: FieldValue.arrayRemove([oldSymbol])])
+            try await database.collection("ModelPortfolio").document(listName).updateData([listName: FieldValue.arrayUnion([newSymbol])])
+        } catch {
+            debugPrint(String.boom, "updateSymbol failed: \(error)")
+        }
+        
+    }
+    
+    func deleteSymbol(listName: String, symbol: String) async {
+
+        do {
+            try await database.collection("ModelPortfolio").document(listName).updateData([listName: FieldValue.arrayRemove([symbol])])
+        } catch {
+            debugPrint(String.boom, "deleteSymbol failed: \(error)")
+        }
+        
     }
     
     func addItem(listName: String, symbol: String, quantity: Int, basis: Decimal) async {
@@ -227,6 +270,7 @@ class FirebaseService: ObservableObject {
         } catch {
             debugPrint(String.boom, "addItem: \(error)")
         }
+        
     }
     
     func getDividend(listName: String, symbol: String) async -> [String] {
@@ -247,6 +291,7 @@ class FirebaseService: ObservableObject {
             debugPrint(String.boom, "getDividend: \(error)")
         }
         return returnVal
+        
     }
     
     func buildDividendArrayElement(dividendDate: Date, dividendAmount: String) -> [String] {
@@ -258,6 +303,7 @@ class FirebaseService: ObservableObject {
         var array: [String] = []
         array.append(str)
         return array
+        
     }
     
     func addDividend(listName: String, symbol: String, dividendDate: Date, dividendAmount: String) async {
@@ -275,6 +321,7 @@ class FirebaseService: ObservableObject {
                 debugPrint(String.boom, "addDividend failed: \(error)")
             }
         }
+        
     }
     
     func deleteDividend(listName: String, symbol: String, dividendDisplayData: DividendDisplayData) async {
@@ -336,6 +383,7 @@ class FirebaseService: ObservableObject {
                 debugPrint(String.boom, "updateItem: \(error)")
             }
         }
+        
     }
     
     func deleteItem(listName: String, symbol: String) async  {
@@ -348,6 +396,7 @@ class FirebaseService: ObservableObject {
         } catch {
             debugPrint(String.boom, "deleteItem: \(error)")
         }
+        
     }
 
     func updateAddFCMToUser(token: String) async {
@@ -377,6 +426,7 @@ class FirebaseService: ObservableObject {
         } catch {
             debugPrint(String.boom, "updateAddUserProfileImage: \(error)")
         }
+        
     }
 
 }

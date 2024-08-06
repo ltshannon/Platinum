@@ -32,6 +32,12 @@
 		B18432A12C4C726600781E04 /* DividendEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B18432A02C4C726600781E04 /* DividendEditView.swift */; };
 		B18432A32C4CB03F00781E04 /* DividendCreateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B18432A22C4CB03F00781E04 /* DividendCreateView.swift */; };
 		B18432A72C4EE09600781E04 /* AppNavigationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B18432A62C4EE09600781E04 /* AppNavigationState.swift */; };
+		B18432A92C587DA200781E04 /* GrowClubPortfolioView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B18432A82C587DA200781E04 /* GrowClubPortfolioView.swift */; };
+		B18432AB2C59DFC300781E04 /* ManageSymbolsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B18432AA2C59DFC300781E04 /* ManageSymbolsView.swift */; };
+		B18432AD2C61540F00781E04 /* AddSymbolView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B18432AC2C61540F00781E04 /* AddSymbolView.swift */; };
+		B18432AF2C61561700781E04 /* ListSymbolsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B18432AE2C61561700781E04 /* ListSymbolsView.swift */; };
+		B18432B12C619A0200781E04 /* DeleteSymbolView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B18432B02C619A0200781E04 /* DeleteSymbolView.swift */; };
+		B18432B42C619BFA00781E04 /* EditSymbolsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B18432B32C619BFA00781E04 /* EditSymbolsView.swift */; };
 		B18B321A2C3CC410006661E0 /* GetPlatinumGrowthData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B18B32192C3CC410006661E0 /* GetPlatinumGrowthData.swift */; };
 		B18B321C2C3CCD11006661E0 /* PlatinumGrowthModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B18B321B2C3CCD11006661E0 /* PlatinumGrowthModel.swift */; };
 		B1C51BDE2C3CD535004FA294 /* DisplayModelPortfolioView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C51BDD2C3CD535004FA294 /* DisplayModelPortfolioView.swift */; };
@@ -65,6 +71,12 @@
 		B18432A02C4C726600781E04 /* DividendEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendEditView.swift; sourceTree = "<group>"; };
 		B18432A22C4CB03F00781E04 /* DividendCreateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendCreateView.swift; sourceTree = "<group>"; };
 		B18432A62C4EE09600781E04 /* AppNavigationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppNavigationState.swift; sourceTree = "<group>"; };
+		B18432A82C587DA200781E04 /* GrowClubPortfolioView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GrowClubPortfolioView.swift; sourceTree = "<group>"; };
+		B18432AA2C59DFC300781E04 /* ManageSymbolsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageSymbolsView.swift; sourceTree = "<group>"; };
+		B18432AC2C61540F00781E04 /* AddSymbolView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddSymbolView.swift; sourceTree = "<group>"; };
+		B18432AE2C61561700781E04 /* ListSymbolsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListSymbolsView.swift; sourceTree = "<group>"; };
+		B18432B02C619A0200781E04 /* DeleteSymbolView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteSymbolView.swift; sourceTree = "<group>"; };
+		B18432B32C619BFA00781E04 /* EditSymbolsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditSymbolsView.swift; sourceTree = "<group>"; };
 		B18B32192C3CC410006661E0 /* GetPlatinumGrowthData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetPlatinumGrowthData.swift; sourceTree = "<group>"; };
 		B18B321B2C3CCD11006661E0 /* PlatinumGrowthModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatinumGrowthModel.swift; sourceTree = "<group>"; };
 		B1C51BDD2C3CD535004FA294 /* DisplayModelPortfolioView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayModelPortfolioView.swift; sourceTree = "<group>"; };
@@ -135,13 +147,19 @@
 				B18432A22C4CB03F00781E04 /* DividendCreateView.swift */,
 				B18432A02C4C726600781E04 /* DividendEditView.swift */,
 				B136CA072C1E6A9600A23278 /* AddingNewStockView.swift */,
-				B136CA212C23A82D00A23278 /* SettingsView.swift */,
 				B1C51BDD2C3CD535004FA294 /* DisplayModelPortfolioView.swift */,
 				B17840692C40AC9B00B55B96 /* AllocationToolView.swift */,
 				B178406B2C41EC0200B55B96 /* ModelPortfolioView.swift */,
 				B18B32192C3CC410006661E0 /* GetPlatinumGrowthData.swift */,
 				B14694A92C3A086100B3C8FE /* AllocationAndModelView.swift */,
+				B18432A82C587DA200781E04 /* GrowClubPortfolioView.swift */,
 				B136CA232C23A83D00A23278 /* ProfileView.swift */,
+				B136CA212C23A82D00A23278 /* SettingsView.swift */,
+				B18432AA2C59DFC300781E04 /* ManageSymbolsView.swift */,
+				B18432AE2C61561700781E04 /* ListSymbolsView.swift */,
+				B18432B32C619BFA00781E04 /* EditSymbolsView.swift */,
+				B18432AC2C61540F00781E04 /* AddSymbolView.swift */,
+				B18432B02C619A0200781E04 /* DeleteSymbolView.swift */,
 				B136CA422C28F2B100A23278 /* TotalsView.swift */,
 				B136CA1B2C23845300A23278 /* Extensions.swift */,
 				B136CA252C23A86500A23278 /* ButtonStyles.swift */,
@@ -245,6 +263,7 @@
 			files = (
 				B136CA062C1E697A00A23278 /* StockDetailView.swift in Sources */,
 				B18432A12C4C726600781E04 /* DividendEditView.swift in Sources */,
+				B18432AF2C61561700781E04 /* ListSymbolsView.swift in Sources */,
 				B136CA082C1E6A9600A23278 /* AddingNewStockView.swift in Sources */,
 				B18B321A2C3CC410006661E0 /* GetPlatinumGrowthData.swift in Sources */,
 				B136CA1E2C23853A00A23278 /* FirebaseService.swift in Sources */,
@@ -256,15 +275,20 @@
 				B136CA1C2C23845300A23278 /* Extensions.swift in Sources */,
 				B18B321C2C3CCD11006661E0 /* PlatinumGrowthModel.swift in Sources */,
 				B1FD8AD92C1A5C89000D0F37 /* PlatinumApp.swift in Sources */,
+				B18432A92C587DA200781E04 /* GrowClubPortfolioView.swift in Sources */,
 				B178406A2C40AC9B00B55B96 /* AllocationToolView.swift in Sources */,
 				B136CA042C1E692700A23278 /* StockListView.swift in Sources */,
 				B136CA1A2C23841B00A23278 /* Authentication.swift in Sources */,
 				B136CA242C23A83D00A23278 /* ProfileView.swift in Sources */,
 				B18432A72C4EE09600781E04 /* AppNavigationState.swift in Sources */,
+				B18432AB2C59DFC300781E04 /* ManageSymbolsView.swift in Sources */,
 				B14694AA2C3A086100B3C8FE /* AllocationAndModelView.swift in Sources */,
 				B178406C2C41EC0200B55B96 /* ModelPortfolioView.swift in Sources */,
 				B136CA412C24FC3400A23278 /* PortfolioService.swift in Sources */,
+				B18432AD2C61540F00781E04 /* AddSymbolView.swift in Sources */,
 				B18432A32C4CB03F00781E04 /* DividendCreateView.swift in Sources */,
+				B18432B42C619BFA00781E04 /* EditSymbolsView.swift in Sources */,
+				B18432B12C619A0200781E04 /* DeleteSymbolView.swift in Sources */,
 				B1C51BDE2C3CD535004FA294 /* DisplayModelPortfolioView.swift in Sources */,
 				B136CA432C28F2B100A23278 /* TotalsView.swift in Sources */,
 				B136CA262C23A86500A23278 /* ButtonStyles.swift in Sources */,

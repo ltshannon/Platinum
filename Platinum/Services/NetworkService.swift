@@ -25,6 +25,7 @@ class NetworkService: ObservableObject {
             if let url = URL(string: "https://financialmodelingprep.com/api/v3/quote-short/" + tickers + "?apikey=w5aSHK4lDmUdz6wSbKtSlcCgL1ckI12Q") {
                 let session = URLSession(configuration: .default)
                 let response = try await session.data(from: url)
+                debugPrint("response: \(response.0)")
                 let data = try JSONDecoder().decode([StockData].self, from: response.0)
 //                debugPrint("StockData: \(data)")
                 return data

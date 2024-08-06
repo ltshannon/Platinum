@@ -193,6 +193,14 @@ struct StockDetailView: View {
                 portfolioService.growthInvestorList = result.0
                 portfolioService.growthInvestorTotal = result.1
                 portfolioService.growthInvestorStockList = result.2
+            case .buy:
+                portfolioService.buyList = result.0
+                portfolioService.buyTotal = result.1
+                portfolioService.buyStockList = result.2
+            case .sell:
+                portfolioService.sellList = result.0
+                portfolioService.sellTotal = result.1
+                portfolioService.sellStockList = result.2
             }
         }
     }

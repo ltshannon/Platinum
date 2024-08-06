@@ -13,12 +13,21 @@ struct SettingsView: View {
     @State var showSignOut = false
     @State var showDeleteAccount = false
     @State var showProfileSheet = false
-    
+    @State var showEditStockListsSheet = false
     var body: some View {
         
         ZStack {
             Color("Background-grey")
             VStack {
+                if userAuth.email == "larry@breakawaydesign.com" {
+                    Button {
+                        showEditStockListsSheet = true
+                    } label: {
+                        Text("Edit Stock Lists")
+                    }
+                    .buttonStyle(PlainTextButtonStyle())
+                    .padding(.top)
+                }
                 Button {
                     showProfileSheet = true
                 } label: {
@@ -71,6 +80,9 @@ struct SettingsView: View {
             .padding([.leading, .trailing])
             .fullScreenCover(isPresented: $showProfileSheet) {
                 ProfileView()
+            }
+            .fullScreenCover(isPresented: $showEditStockListsSheet) {
+                ManageSymbolsView()
             }
         }
     }

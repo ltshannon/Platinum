@@ -26,70 +26,72 @@ struct DisplayModelPortfolioView: View {
     ]
     
     var body: some View {
-        VStack {
-            Picker("", selection: $segment) {
-                ForEach(PlatinumGrowType.allCases, id: \.self) {
-                    if $0 != .notSet {
-                        Text($0.rawValue)
+        NavigationStack {
+            VStack {
+                Picker("", selection: $segment) {
+                    ForEach(PlatinumGrowType.allCases, id: \.self) {
+                        if $0 != .notSet {
+                            Text($0.rawValue)
+                        }
                     }
                 }
-            }
-            .pickerStyle(.segmented)
-
-            ScrollView {
-                VStack(alignment: .leading) {
-                    if let model = platinumGrowthModel.allocationAndModeData {
-                        if segment == .modelPortfolio {
-                            ModelPortfolioView(modelPortfolio: model.modelPortfolio)
-                        } else if segment == .allocationTool {
-                            if model.allocationTool.count > 0 {
-                                AllocationToolView(investments: model.allocationTool[0].investments)
-                            }
-                        } else if segment == .sevenDayRotation {
-                            LazyVGrid(columns: columns, alignment: .leading) {
-                                Group {
-                                    Text("Sym")
-                                    Text("Date")
-                                    Text("Below")
-                                    Text("Own")
-                                    Text("Basis")
+                .pickerStyle(.segmented)
+                
+                ScrollView {
+                    VStack(alignment: .leading) {
+                        if let model = platinumGrowthModel.allocationAndModeData {
+                            if segment == .modelPortfolio {
+                                ModelPortfolioView(modelPortfolio: model.modelPortfolio)
+                            } else if segment == .allocationTool {
+                                if model.allocationTool.count > 0 {
+                                    AllocationToolView(investments: model.allocationTool[0].investments)
                                 }
-                                Group {
-                                    Text("----")
-                                    Text("-----")
-                                    Text("-----")
-                                    Text("-----")
-                                    Text("-----")
-                                }
-                                ForEach(model.sevenDayRotation, id: \.id) { item in
-                                    Text(item.symbol)
-                                        .foregroundStyle(item.stockAction.getActionColor(stockAction: item.stockAction))
-                                    Text(item.buyDate)
-                                    Text(item.buyBelow)
-                                    Text(item.inPorfilio ? "Yes" : "No")
-                                        .foregroundStyle(item.inPorfilio ? .black : .red)
-                                    Text("\(item.portfilioBasis as NSDecimalNumber, formatter: currencyFormatter)")
+                            } else if segment == .sevenDayRotation {
+                                LazyVGrid(columns: columns, alignment: .leading) {
+                                    Group {
+                                        Text("Sym")
+                                        Text("Date")
+                                        Text("Below")
+                                        Text("Own")
+                                        Text("Basis")
+                                    }
+                                    Group {
+                                        Text("----")
+                                        Text("-----")
+                                        Text("-----")
+                                        Text("-----")
+                                        Text("-----")
+                                    }
+                                    ForEach(model.sevenDayRotation, id: \.id) { item in
+                                        Text(item.symbol)
+                                            .foregroundStyle(item.stockAction.getActionColor(stockAction: item.stockAction))
+                                        Text(item.buyDate)
+                                        Text(item.buyBelow)
+                                        Text(item.inPorfilio ? "Yes" : "No")
+                                            .foregroundStyle(item.inPorfilio ? .black : .red)
+                                        Text("\(item.portfilioBasis as NSDecimalNumber, formatter: currencyFormatter)")
+                                    }
                                 }
                             }
                         }
                     }
+                    .frame(maxWidth: .infinity)
+                    .padding([.leading, .trailing], 20)
+                    .fullScreenCover(isPresented: $showingSheet, onDismiss: didDismiss) {
+                        GetPlatinumGrowthData()
+                    }
                 }
-                .frame(maxWidth: .infinity)
-                .padding([.leading, .trailing], 20)
-                .fullScreenCover(isPresented: $showingSheet, onDismiss: didDismiss) {
-                    GetPlatinumGrowthData()
+                .alert(alertMessage, isPresented: $showingAlert) {
+                    Button("OK", role: .cancel) { }
                 }
             }
-            .alert(alertMessage, isPresented: $showingAlert) {
-                Button("OK", role: .cancel) { }
-            }
-        }
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button {
-                    showingSheet = true
-                } label: {
-                    Text("Refresh")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        showingSheet = true
+                    } label: {
+                        Text("Refresh")
+                    }
                 }
             }
         }

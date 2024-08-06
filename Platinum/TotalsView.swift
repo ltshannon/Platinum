@@ -24,14 +24,16 @@ struct TotalsView: View {
     @State var growthInvestorList: [ItemData] = []
     @State var growthInvestorTotal: Decimal = 0
     @State var growthInvestorTotalBasis: Decimal = 0
+    @State var buyTotal: Decimal = 0
+    @State var sellTotal: Decimal = 0
     @State var total: Decimal = 0
     @State var totalBasis: Decimal = 0
     @State var totalValue: Decimal = 0
     @State var totalDividend: Decimal = 0
     @State var dividendList: [DividendDisplayData] = []
     let columns: [GridItem] = [
-                                GridItem(.fixed(250), spacing: 5),
-                                GridItem(.fixed(150), spacing: 5)
+                                GridItem(.adaptive(minimum: 250)),
+                                GridItem(.adaptive(minimum: 150))
     ]
     
     var body: some View {
@@ -53,20 +55,30 @@ struct TotalsView: View {
                             Text("-----")
                         }
                         ForEach(PortfolioType.allCases, id: \.id) { item in
-                            Text(item.rawValue.camelCaseToWords())
-                            switch item {
-                            case .acceleratedProfits:
-                                Text("$\(acceleratedProfitsTotal as NSDecimalNumber, formatter: currencyFormatter)")
-                                    .foregroundStyle(acceleratedProfitsTotal < 0 ?.red : .green)
-                            case .breakthroughStocks:
-                                Text("$\(breakthroughTotal as NSDecimalNumber, formatter: currencyFormatter)")
-                                    .foregroundStyle(breakthroughTotal < 0 ?.red : .green)
-                            case .eliteDividendPayers:
-                                Text("$\(eliteDividendPayersTotal as NSDecimalNumber, formatter: currencyFormatter)")
-                                    .foregroundStyle(eliteDividendPayersTotal < 0 ?.red : .green)
-                            case .growthInvestor:
-                                Text("$\(growthInvestorTotal as NSDecimalNumber, formatter: currencyFormatter)")
-                                    .foregroundStyle(growthInvestorTotal < 0 ?.red : .green)
+                            if item != .buy && item != .sell {
+                                Text(item.rawValue.camelCaseToWords())
+                                switch item {
+                                case .acceleratedProfits:
+                                    Text("$\(acceleratedProfitsTotal as NSDecimalNumber, formatter: currencyFormatter)")
+                                        .foregroundStyle(acceleratedProfitsTotal < 0 ?.red : .green)
+                                case .breakthroughStocks:
+                                    Text("$\(breakthroughTotal as NSDecimalNumber, formatter: currencyFormatter)")
+                                        .foregroundStyle(breakthroughTotal < 0 ?.red : .green)
+                                case .eliteDividendPayers:
+                                    Text("$\(eliteDividendPayersTotal as NSDecimalNumber, formatter: currencyFormatter)")
+                                        .foregroundStyle(eliteDividendPayersTotal < 0 ?.red : .green)
+                                case .growthInvestor:
+                                    Text("$\(growthInvestorTotal as NSDecimalNumber, formatter: currencyFormatter)")
+                                        .foregroundStyle(growthInvestorTotal < 0 ?.red : .green)
+                                case .buy:
+                                    EmptyView()
+                                    Text("$\(buyTotal as NSDecimalNumber, formatter: currencyFormatter)")
+                                        .foregroundStyle(buyTotal < 0 ?.red : .green)
+                                case .sell:
+                                    EmptyView()
+                                    Text("$\(sellTotal as NSDecimalNumber, formatter: currencyFormatter)")
+                                        .foregroundStyle(buyTotal < 0 ?.red : .green)
+                                }
                             }
                         }
                         Group {
@@ -93,11 +105,25 @@ struct TotalsView: View {
                             Text("$\(totalValue as NSDecimalNumber, formatter: currencyFormatter)")
                                 .foregroundStyle(total < 0 ?.red : .green)
                         }
+                        Group {
+                            Text("")
+                            Text("")
+                        }
+                        Group {
+                            Text("Sell")
+                            Text("$\(sellTotal as NSDecimalNumber, formatter: currencyFormatter)")
+                                .foregroundStyle(total < 0 ?.red : .green)
+                        }
+                        Group {
+                            Text("Buy")
+                            Text("$\(buyTotal as NSDecimalNumber, formatter: currencyFormatter)")
+                                .foregroundStyle(total < 0 ?.red : .green)
+                        }
                     }
                     Spacer()
                 }
             }
-            .padding(.leading, 30)
+            .padding(.leading, 15)
             .navigationBarTitle("Investment Totals")
             .background {
                 NavigationStyleLayer()
@@ -116,6 +142,8 @@ struct TotalsView: View {
                 growthInvestorTotalBasis = portfolioService.growthInvestorTotalBasis
                 dividendList = portfolioService.eliteDividendPayersDividendList
                 totalDividend = portfolioService.computeDividendTotal(list: dividendList)
+                buyTotal = portfolioService.buyTotal
+                sellTotal = portfolioService.sellTotal
                 computeTotal()
             }
 
@@ -133,6 +161,14 @@ struct TotalsView: View {
             }
             .onReceive(portfolioService.$growthInvestorTotal) { total in
                 growthInvestorTotal = total
+                computeTotal()
+            }
+            .onReceive(portfolioService.$buyTotal) { total in
+                buyTotal = total
+                computeTotal()
+            }
+            .onReceive(portfolioService.$sellTotal) { total in
+                sellTotal = total
                 computeTotal()
             }
             .onReceive(portfolioService.$acceleratedProfitsTotalBasis) { total in

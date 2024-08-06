@@ -13,6 +13,19 @@ enum PortfolioType: String, CaseIterable, Identifiable, Encodable {
     case breakthroughStocks =  "BreakthroughStocks"
     case eliteDividendPayers = "EliteDividendPayers"
     case growthInvestor = "GrowthInvestor"
+    case buy = "Buy"
+    case sell = "Sell"
+    
+    var id: String { return self.rawValue }
+}
+
+enum GrowthClubPortfolio: String, CaseIterable, Identifiable, Encodable {
+    case accelerated = "Accelerated"
+    case breakthrough = "Breakthrough"
+    case dividend = "Dividend"
+    case growth = "Growth"
+    case buy = "Buy"
+    case sell = "Sell"
     
     var id: String { return self.rawValue }
 }
@@ -38,48 +51,57 @@ class PortfolioService: ObservableObject {
     @Published var growthInvestorTotal: Decimal = 0
     @Published var growthInvestorTotalBasis: Decimal = 0
     @Published var growthInvestorStockList: [String] = []
+    @Published var buyList: [ItemData] = []
+    @Published var buyTotal: Decimal = 0
+    @Published var buyTotalBasis: Decimal = 0
+    @Published var buyStockList: [String] = []
+    @Published var sellList: [ItemData] = []
+    @Published var sellTotal: Decimal = 0
+    @Published var sellTotalBasis: Decimal = 0
+    @Published var sellStockList: [String] = []
     @Published var stockList: [String] = []
     @Published var showingProgress = false
-    @Published var progress = 0.0
     
     func loadPortfolios() {
         Task { @MainActor in
             showingProgress = true
-            progress = 0.0
             async let result1 = getPortfolio(listName: .acceleratedProfits)
             async let result2 = getPortfolio(listName: .breakthroughStocks)
             async let result3 = getPortfolio(listName: .eliteDividendPayers)
             async let result4 = getPortfolio(listName: .growthInvestor)
+            async let result5 = getPortfolio(listName: .buy)
+            async let result6 = getPortfolio(listName: .sell)
             acceleratedProfitsList = await result1.0
             acceleratedProfitsTotal = await result1.1
             acceleratedProfitsStockList = await result1.2
             acceleratedProfitsTotalBasis = await result1.3
-            progress = 25
             breakthroughList = await result2.0
             breakthroughTotal = await result2.1
             breakthroughStockList = await result2.2
             breakthroughTotalBasis = await result2.3
-            progress = 50
-            self.eliteDividendPayersList = await result3.0
-            self.eliteDividendPayersTotal = await result3.1
-            self.eliteDividendPayersStockList = await result3.2
-            self.eliteDividendPayersTotalBasis = await result3.3
-            self.eliteDividendPayersDividendList = await result3.4
-            progress = 75
+            eliteDividendPayersList = await result3.0
+            eliteDividendPayersTotal = await result3.1
+            eliteDividendPayersStockList = await result3.2
+            eliteDividendPayersTotalBasis = await result3.3
+            eliteDividendPayersDividendList = await result3.4
             growthInvestorList = await result4.0
             growthInvestorTotal = await result4.1
             growthInvestorStockList = await result4.2
             growthInvestorTotalBasis = await result4.3
-            progress = 100
+            buyList = await result5.0
+            buyTotal = await result5.1
+            buyStockList = await result5.2
+            buyTotalBasis = await result5.3
+            sellList = await result6.0
+            sellTotal = await result6.1
+            sellStockList = await result6.2
+            sellTotalBasis = await result6.3
             showingProgress = false
         }
     }
     
     func getPortfolio(listName: PortfolioType) async -> ([ItemData], Decimal, [String], Decimal, [DividendDisplayData]) {
         
-        await MainActor.run {
-//            showingProgress = true
-        }
         let stockList = await firebaseService.getStockList(listName: listName.rawValue)
         let data = await firebaseService.getPortfolioList(stockList: stockList, listName: listName)
         var items: [ItemData] = []
@@ -108,12 +130,33 @@ class PortfolioService: ObservableObject {
             }
         }
         
-        let modelStock = await firebaseService.getModelStockList(listName: listName)
-        await MainActor.run {
-            self.stockList = modelStock.sorted()
-//            showingProgress = false
-        }
+        let modelStock = await getSymbolList(listName: listName)
+
         return (items, total, modelStock, totalBasis, dividendList)
+    }
+    
+    func getSymbolList(listName: PortfolioType) async -> [String] {
+        
+        let items = await firebaseService.getModelSymbolList(listName: listName)
+        await MainActor.run {
+            self.stockList = items.sorted()
+        }
+        return items
+    }
+    
+    func addSymbol(listName: String, symbol: String) async {
+        
+        await firebaseService.addSymbol(listName: listName, symbol: symbol)
+    }
+    
+    func updateSymbol(listName: String, newSymbol: String, oldSymbol: String) async {
+     
+        await firebaseService.updateSymbol(listName: listName, oldSymbol: oldSymbol, newSymbol: newSymbol)
+    }
+    
+    func deleteSymbol(listName: String, symbol: String) async {
+        
+        await firebaseService.deleteSymbol(listName: listName, symbol: symbol)
     }
     
     func addStock(listName: String, item: ItemData) async {
@@ -196,6 +239,10 @@ class PortfolioService: ObservableObject {
             list = eliteDividendPayersList
         case.growthInvestor:
             list = growthInvestorList
+        case.buy:
+            list = buyList
+        case.sell:
+            list = sellList
         }
         let items = list.filter { $0.symbol == symbol }
         if let item = items.first {

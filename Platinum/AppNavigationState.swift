@@ -44,14 +44,25 @@ struct DividendEditParameters: Identifiable, Hashable, Encodable  {
     }
 }
 
+struct SymbolEditParameters: Identifiable, Hashable, Encodable {
+    var id = UUID().uuidString
+    var listName: PortfolioType
+    var symbol: String
+}
+
 enum DividendNavDestination: Hashable {
     case stockDetailView(StockDetailParameters)
     case dividendCreateView(DividendCreateParameters)
     case dividendEditView(DividendEditParameters)
 }
 
+enum SymbolsNavDestination: Hashable {
+    case editSymbolsView(SymbolEditParameters)
+}
+
 class AppNavigationState: ObservableObject {
     @Published var dividendNavigation: [DividendNavDestination] = []
+    @Published var symbolsNavigation: [SymbolsNavDestination] = []
  
     func stockDetailView(parameters: StockDetailParameters) {
         dividendNavigation.append(DividendNavDestination.stockDetailView(parameters))
@@ -59,6 +70,10 @@ class AppNavigationState: ObservableObject {
     
     func dividendEditView(parameters: DividendEditParameters) {
         dividendNavigation.append(DividendNavDestination.dividendEditView(parameters))
+    }
+    
+    func symbolEditView(parameters: SymbolEditParameters) {
+        symbolsNavigation.append(SymbolsNavDestination.editSymbolsView(parameters))
     }
     
 }

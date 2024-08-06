@@ -29,12 +29,12 @@ struct StockListView: View {
     @State var stockList: [String] = []
     @State var dividendList: [DividendDisplayData] = []
     let columns: [GridItem] = [
-                                GridItem(.fixed(55), spacing: 3),
-                                GridItem(.fixed(40), spacing: 3),
-                                GridItem(.fixed(80), spacing: 3),
-                                GridItem(.fixed(75), spacing: 3),
-                                GridItem(.fixed(80), spacing: 3),
-                                GridItem(.fixed(20), spacing: 3)
+                                GridItem(.fixed(55), spacing: 2),
+                                GridItem(.fixed(45), spacing: 2),
+                                GridItem(.fixed(80), spacing: 2),
+                                GridItem(.fixed(75), spacing: 2),
+                                GridItem(.fixed(80), spacing: 2),
+                                GridItem(.fixed(15), spacing: 2)
     ]
 
     var body: some View {
@@ -65,7 +65,6 @@ struct StockListView: View {
                         Button {
                             let paramters = StockDetailParameters(key: key, item: item)
                             appNavigationState.stockDetailView(parameters: paramters)
-
                         } label: {
                             Image(systemName: "pencil")
                         }
@@ -149,7 +148,7 @@ struct StockListView: View {
             .refreshable {
                 pullToRefresh()
             }
-            .padding([.leading], 5)
+            .padding([.leading, .trailing], 10)
             Spacer()
             Button {
                 showingSheet = true
@@ -163,10 +162,6 @@ struct StockListView: View {
                 }
             }
             Spacer()
-            .navigationBarTitle(key.rawValue.camelCaseToWords())
-            .background {
-                NavigationStyleLayer()
-            }
             .onAppear {
                 switch key {
                 case .acceleratedProfits:
@@ -179,6 +174,10 @@ struct StockListView: View {
                     totalDividend = portfolioService.computeDividendTotal(list: dividendList)
                 case .growthInvestor:
                     items = portfolioService.growthInvestorList
+                case .buy:
+                    items = portfolioService.buyList
+                case .sell:
+                    items = portfolioService.sellList
                 }
             }
             .onReceive(portfolioService.$eliteDividendPayersList) { list in
@@ -257,7 +256,7 @@ struct StockListView: View {
                     self.total = total
                 }
             }
-            .onReceive(portfolioService.$growthInvestorTotal) { total in
+            .onReceive(portfolioService.$growthInvestorTotalBasis) { total in
                 if key == .growthInvestor {
                     self.totalBasis = total
                 }
@@ -267,18 +266,54 @@ struct StockListView: View {
                     self.stockList = stockList
                 }
             }
+            .onReceive(portfolioService.$buyList) { items in
+                if key == .buy {
+                    self.items = items
+                }
+            }
+            .onReceive(portfolioService.$buyTotal) { total in
+                if key == .buy {
+                    self.total = total
+                }
+            }
+            .onReceive(portfolioService.$buyTotalBasis) { total in
+                if key == .buy {
+                    self.totalBasis = total
+                }
+            }
+            .onReceive(portfolioService.$buyStockList) { stockList in
+                if key == .buy {
+                    self.stockList = stockList
+                }
+            }
+            .onReceive(portfolioService.$sellList) { items in
+                if key == .sell {
+                    self.items = items
+                }
+            }
+            .onReceive(portfolioService.$sellTotal) { total in
+                if key == .sell {
+                    self.total = total
+                }
+            }
+            .onReceive(portfolioService.$sellTotalBasis) { total in
+                if key == .sell {
+                    self.totalBasis = total
+                }
+            }
+            .onReceive(portfolioService.$sellStockList) { stockList in
+                if key == .sell {
+                    self.stockList = stockList
+                }
+            }
             .fullScreenCover(isPresented: $showingSheet, onDismiss: didDismiss) {
                 AddingNewStockView(key: key, stockList: stockList)
             }
-//            .fullScreenCover(isPresented: $portfolioService.showingProgress) {
-//                ProgressView()
-//                    .progressViewStyle(CircularProgressViewStyle(tint: Color.blue))
-//            }
             .navigationDestination(for: DividendNavDestination.self) { state in
                 switch state {
                 case .stockDetailView(let parameters):
                     StockDetailView(paramters: parameters)
-                case .dividendCreateView(let paramters):
+                case .dividendCreateView(_):
                     EmptyView()
                 case .dividendEditView(let parameters):
                     DividendEditView(parameters: parameters)
@@ -294,9 +329,7 @@ struct StockListView: View {
     func refreshStocks() {
         Task {
             await MainActor.run {
-                portfolioService.progress = 0
                 portfolioService.showingProgress = true
-                portfolioService.progress = 100
             }
             let result = await portfolioService.getPortfolio(listName: key)
             await MainActor.run {
@@ -325,6 +358,14 @@ struct StockListView: View {
                     portfolioService.growthInvestorList = result.0
                     portfolioService.growthInvestorTotal = result.1
                     portfolioService.growthInvestorStockList = result.2
+                case .buy:
+                    portfolioService.buyList = result.0
+                    portfolioService.buyTotal = result.1
+                    portfolioService.buyStockList = result.2
+                case .sell:
+                    portfolioService.sellList = result.0
+                    portfolioService.sellTotal = result.1
+                    portfolioService.sellStockList = result.2
                 }
                 portfolioService.showingProgress = false
             }

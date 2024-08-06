@@ -532,15 +532,15 @@ struct AllocationAndModelView: UIViewRepresentable {
                     
                     for (index, item) in array.enumerated() {
                         switch index {
-                        case 0: symbol = item
-                        case 1: company = item
-                        case 2: totalGrade = item
-                        case 3: buyDate = item
-                        case 4: buyPrice = item
-                        case 5: returnPercent = item
-                        case 6: recentPrice = item
-                        case 7: buyBelow = item
-                        case 8: yield = item
+                        case 0: company = item
+                        case 1: totalGrade = item
+                        case 2: buyDate = item
+                        case 3: buyPrice = item
+                        case 4: returnPercent = item
+                        case 5: recentPrice = item
+                        case 6: buyBelow = item
+                        case 7: yield = item
+                        case 8: symbol = item
                         case 9:
                             switch item.uppercased() {
                             case StockAction.new.rawValue:
@@ -560,14 +560,21 @@ struct AllocationAndModelView: UIViewRepresentable {
                     
                     modelPortfolioArray.append(modelPortfolioData)
                     
-                    if stockAction != .none && array.count > 0 {
-                        array.removeLast()
+//                    if stockAction != .none && array.count > 0 {
+//                        array.removeLast()
+//                    }
+//                    guard let last = array.last else {
+//                        debugPrint("removeModelPortfolioValues get last failed")
+//                        return nil
+//                    }
+//                    debugPrint("last: \(last)")
+                    
+                    var last = ""
+                    if yield.contains("%") {
+                        last = yield
+                    } else {
+                        last = "–"
                     }
-                    guard let last = array.last else {
-                        debugPrint("removeModelPortfolioValues get last failed")
-                        return nil
-                    }
-                    debugPrint("last: \(last)")
                     guard let temp2 = findAndRemove(text: processData, search: last) else {
                         debugPrint("removeModelPortfolioValues could not find last")
                         self.showAlert()
