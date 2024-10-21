@@ -13,7 +13,7 @@ struct ItemData: Identifiable, Encodable, Decodable, Hashable {
     var basis: Decimal
     var price: Decimal
     var gainLose: Decimal
-    var quantity: Int
+    var quantity: Double
     var dividend: [String]?
 }
 

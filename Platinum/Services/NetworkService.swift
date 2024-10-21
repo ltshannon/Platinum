@@ -22,7 +22,7 @@ class NetworkService: ObservableObject {
     
     func fetch(tickers: String) async -> [StockData] {
         do {
-            if let url = URL(string: "https://financialmodelingprep.com/api/v3/quote-short/" + tickers + "?apikey=w5aSHK4lDmUdz6wSbKtSlcCgL1ckI12Q") {
+            if let url = URL(string: "https://financialmodelingprep.com/api/v3/quote-short/" + tickers + "?apikey=ebsEkpswwWUGa5RgJG6YlMzG2lC0Tljf") {
                 let session = URLSession(configuration: .default)
                 let response = try await session.data(from: url)
                 debugPrint("response: \(response.0)")

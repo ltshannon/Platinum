@@ -57,7 +57,7 @@ struct StockListView: View {
                     .underline()
                     ForEach(items, id: \.id) { item in
                         Text("\(item.symbol)")
-                        Text("\(item.quantity)")
+                        Text(item.quantity.truncatingRemainder(dividingBy: 1) > 0 ? "\(item.quantity, specifier: "%.2f")" : "\(item.quantity, specifier: "%.0f")")
                         Text("\(item.basis as NSDecimalNumber, formatter: currencyFormatter)")
                         Text("\(item.price as NSDecimalNumber, formatter: currencyFormatter)")
                         Text("\(abs(item.gainLose) as NSDecimalNumber, formatter: currencyFormatter)")

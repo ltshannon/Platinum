@@ -60,7 +60,7 @@ struct StockDetailView: View {
                 }
                 Section {
                     TextField("Quantity", text: $quantity)
-                        .keyboardType(.numberPad)
+                        .keyboardType(.decimalPad)
                 } header: {
                     Text("Number of shares")
                 }
@@ -85,7 +85,7 @@ struct StockDetailView: View {
                         }
                         .keyboardType(.decimalPad)
                 } header: {
-                    Text("Stock Basis")
+                    Text("Cost Basis")
                 }
                 Section {
                     Text(price)
@@ -214,7 +214,7 @@ struct StockDetailView: View {
         
         Task {
             dismiss()
-            await portfolioService.updateStock(listName: key.rawValue, symbol: symbol, originalSymbol: originalSymbol, quantity: Int(quantity) ?? 0, basis: basis)
+            await portfolioService.updateStock(listName: key.rawValue, symbol: symbol, originalSymbol: originalSymbol, quantity: Double(quantity) ?? 0, basis: basis)
             await updatePortfolio(key: key)
         }
     }

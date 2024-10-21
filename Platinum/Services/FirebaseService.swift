@@ -18,7 +18,7 @@ struct StockItem: Codable, Identifiable, Hashable {
 
 struct PortfolioItem: Codable, Identifiable, Hashable {
     @DocumentID var id: String?
-    var quantity: Int
+    var quantity: Double
     var basis: Decimal
     var dividend: [String]?
 }
@@ -255,7 +255,7 @@ class FirebaseService: ObservableObject {
         
     }
     
-    func addItem(listName: String, symbol: String, quantity: Int, basis: Decimal) async {
+    func addItem(listName: String, symbol: String, quantity: Double, basis: Decimal) async {
         guard let user = Auth.auth().currentUser else {
             return
         }
@@ -358,7 +358,7 @@ class FirebaseService: ObservableObject {
         
     }
     
-    func updateItem(listName: String, symbol: String, originalSymbol: String, quantity: Int, basis: String) async {
+    func updateItem(listName: String, symbol: String, originalSymbol: String, quantity: Double, basis: String) async {
         guard let user = Auth.auth().currentUser else {
             return
         }

@@ -51,7 +51,7 @@ struct AddingNewStockView: View {
                     Section {
                         TextField("Quantity", text: $quantity)
                             .focused($focusedField, equals: .quantity)
-                            .keyboardType(.numberPad)
+                            .keyboardType(.decimalPad)
                     } header: {
                         Text("Number of shares")
                     }
@@ -60,7 +60,7 @@ struct AddingNewStockView: View {
                             .focused($focusedField, equals: .basis)
                             .keyboardType(.decimalPad)
                     } header: {
-                        Text("Stock Basis")
+                        Text("Cost Basis")
                     }
                 }
                 Button {
@@ -93,7 +93,7 @@ struct AddingNewStockView: View {
     }
     
     func add() {
-        let item = ItemData(symbol: selectedStock, basis: Decimal(string: basis) ?? 0, price: 0, gainLose: 0, quantity: Int(quantity) ?? 0)
+        let item = ItemData(symbol: selectedStock, basis: Decimal(string: basis) ?? 0, price: 0, gainLose: 0, quantity: Double(quantity) ?? 0)
         Task {
             dismiss()
             await portfolioService.addStock(listName: key.rawValue, item: item)

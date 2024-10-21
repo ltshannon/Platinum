@@ -22,26 +22,6 @@ struct ContentView: View {
                 .tabItem {
                     Label("Club Portfolio", systemImage: "rectangle.grid.2x2")
                 }
-//            StockListView(key: .acceleratedProfits)
-//                .tabItem {
-//                    Label("Accelerated", systemImage: "rectangle.grid.2x2")
-//                }
-//                .tag(4)
-//            StockListView(key: .breakthroughStocks)
-//                .tabItem {
-//                    Label("Breakthrough", systemImage: "rectangle.grid.2x2")
-//                }
-//                .tag(3)
-//            StockListView(key: .eliteDividendPayers)
-//                .tabItem {
-//                    Label("Dividend", systemImage: "rectangle.grid.2x2")
-//                }
-//                .tag(1)
-//            StockListView(key: .growthInvestor)
-//                .tabItem {
-//                    Label("Growth", systemImage: "rectangle.grid.2x2")
-//                }
-//                .tag(2)
             TotalsView()
                 .tabItem {
                     Label("Totals", systemImage: "equal.circle")
