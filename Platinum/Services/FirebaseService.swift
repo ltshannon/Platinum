@@ -14,6 +14,7 @@ let database = Firestore.firestore()
 
 struct StockItem: Codable, Identifiable, Hashable {
     @DocumentID var id: String?
+    var symbol: String?
 }
 
 struct PortfolioItem: Codable, Identifiable, Hashable {
@@ -21,6 +22,7 @@ struct PortfolioItem: Codable, Identifiable, Hashable {
     var quantity: Double
     var basis: Decimal
     var dividend: [String]?
+    var symbol: String?
 }
 
 struct ModelStock: Codable, Identifiable, Hashable {
@@ -115,7 +117,7 @@ class FirebaseService: ObservableObject {
         }
     }
     
-    func getPortfolioList(stockList: [String], listName: PortfolioType) async -> [PortfolioItem] {
+    func getPortfolioList(stockList: [StockItem], listName: PortfolioType) async -> [PortfolioItem] {
         guard let user = Auth.auth().currentUser else {
             return []
         }
@@ -123,33 +125,41 @@ class FirebaseService: ObservableObject {
         var portfolioItems: [PortfolioItem] = []
         for item in stockList {
             do {
-                var portfolioItem = PortfolioItem(quantity: 0, basis: 0)
-                let querySnapshot = try await database.collection("users").document(user.uid).collection(listName.rawValue).document(item).getDocument()
+                var id: String = ""
+                if let symbol = item.symbol {
+                    id = item.id ?? "n/a"
+                } else {
+                    id = item.id ?? "n/a"
+                }
+                let querySnapshot = try await database.collection("users").document(user.uid).collection(listName.rawValue).document(id).getDocument()
                 if querySnapshot.exists {
-                    let data = try querySnapshot.data(as: PortfolioItem.self)
-                    portfolioItem.quantity = data.quantity
-                    portfolioItem.basis = data.basis
-                    portfolioItem.id = data.id
-                }
-                if listName == .eliteDividendPayers {
-                    let querySnapshot2 = try await database.collection("users").document(user.uid).collection(listName.rawValue).document(item).collection("dividend").document("dividend").getDocument()
-                    if querySnapshot2.exists {
-                        let data = try querySnapshot2.data(as: DividendData.self)
-//                        debugPrint("👾", "dividend: \(data)")
-                        portfolioItem.dividend = data.values
+                    var data = try querySnapshot.data(as: PortfolioItem.self)
+                    if let stock = data.symbol {
+                        data.symbol = stock
+                    } else {
+                        data.symbol = data.id ?? "n/a"
                     }
+                    if listName == .eliteDividendPayers {
+                        let querySnapshot2 = try await database.collection("users").document(user.uid).collection(listName.rawValue).document(id).collection("dividend").document("dividend").getDocument()
+                        if querySnapshot2.exists {
+                            let data2 = try querySnapshot2.data(as: DividendData.self)
+                            //                        debugPrint("👾", "dividend: \(data2)")
+                            data.dividend = data2.values
+                        }
+                    }
+                    portfolioItems.append(data)
                 }
-                portfolioItems.append(portfolioItem)
             }
             catch {
                 debugPrint("🧨", "Error reading stock items: \(error.localizedDescription)")
             }
         }
-        return portfolioItems
+        
+        return portfolioItems.sorted(by: { $0.symbol ?? "" < $1.symbol ?? "" })
     }
     
-    func getStockList(listName: String) async -> [String] {
-        var items: [String] = []
+    func getStockList(listName: String) async -> [StockItem] {
+        var items: [StockItem] = []
         
         guard let user = Auth.auth().currentUser else {
             return []
@@ -158,18 +168,19 @@ class FirebaseService: ObservableObject {
             let querySnapshot = try await database.collection("users").document(user.uid).collection(listName).getDocuments()
             
             for document in querySnapshot.documents {
-                let item = try document.data(as: StockItem.self)
-                if let symbol = item.id {
-                    if symbol.count <= 4 {
-                        items.append(symbol)
+                var item = try document.data(as: StockItem.self)
+                if let _ = item.id {
+                    if let symbol = item.symbol {
+                        item.symbol = symbol
                     }
+                    items.append(item)
                 }
             }
         }
         catch {
             debugPrint("🧨", "Error reading getStockList: \(error.localizedDescription)")
         }
-        items.sort()
+        items.sort(by: { $0.id ?? "" < $1.id ?? "" })
         return items
 
     }
@@ -262,11 +273,13 @@ class FirebaseService: ObservableObject {
         
         let temp = NSDecimalNumber(decimal: basis)
         let value = [
+            "symbol": symbol,
             "quantity": quantity,
             "basis": temp
         ] as [String : Any]
         do {
-            try await database.collection("users").document(user.uid).collection(listName).document(symbol).setData(value)
+//            try await database.collection("users").document(user.uid).collection(listName).document(symbol).setData(value)
+            try await database.collection("users").document(user.uid).collection(listName).addDocument(data: value)
         } catch {
             debugPrint(String.boom, "addItem: \(error)")
         }
@@ -358,7 +371,7 @@ class FirebaseService: ObservableObject {
         
     }
     
-    func updateItem(listName: String, symbol: String, originalSymbol: String, quantity: Double, basis: String) async {
+    func updateItem(firestoreId: String, listName: String, symbol: String, originalSymbol: String, quantity: Double, basis: String) async {
         guard let user = Auth.auth().currentUser else {
             return
         }
@@ -378,7 +391,7 @@ class FirebaseService: ObservableObject {
                 "basis": temp
             ] as [String : Any]
             do {
-                try await database.collection("users").document(user.uid).collection(listName).document(originalSymbol).updateData(value)
+                try await database.collection("users").document(user.uid).collection(listName).document(firestoreId).updateData(value)
             } catch {
                 debugPrint(String.boom, "updateItem: \(error)")
             }

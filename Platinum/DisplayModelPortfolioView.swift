@@ -146,7 +146,7 @@ struct DisplayModelPortfolioView: View {
                     }
                     let stockList = await firebaseService.getStockList(listName: listName)
                     for (index2, item) in portfolio.modelPortfolioData.enumerated() {
-                        if stockList.contains(item.symbol) {
+                        if stockList.contains( where: { $0.id == item.symbol } ) || stockList.contains( where: { $0.symbol == item.symbol } ) {
                             modelPortfolios[index].modelPortfolioData[index2].inPorfilio = true
                         }
                     }
@@ -169,7 +169,7 @@ struct DisplayModelPortfolioView: View {
                 for type in PortfolioType.allCases {
                     let stockList = await firebaseService.getStockList(listName: type.rawValue)
                     for (index, item) in sevenDayData.enumerated() {
-                        if stockList.contains(item.symbol) {
+                        if stockList.contains( where: { $0.id == item.symbol } ) || stockList.contains( where: { $0.symbol == item.symbol } ) {
                             sevenDayData[index].inPorfilio = true
                             if let dec = portfolioService.getBasisForStockInPortfilio(portfolioType: type, symbol: item.symbol) {
                                 sevenDayData[index].portfilioBasis = dec

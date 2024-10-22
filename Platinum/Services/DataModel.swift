@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ItemData: Identifiable, Encodable, Decodable, Hashable {
     var id: String = UUID().uuidString
+    var firestoreId: String
     var symbol: String
     var basis: Decimal
     var price: Decimal

@@ -106,32 +106,51 @@ class PortfolioService: ObservableObject {
         let data = await firebaseService.getPortfolioList(stockList: stockList, listName: listName)
         var items: [ItemData] = []
         for item in data {
-            let temp = ItemData(symbol: item.id ?? "NA", basis: item.basis, price: 0, gainLose: 0, quantity: item.quantity, dividend: item.dividend)
+            var value = ""
+            if let symbol = item.symbol {
+                value = symbol
+            } else {
+                value = item.id ?? "NA"
+            }
+            let temp = ItemData(firestoreId: item.id ?? "n/a", symbol: value, basis: item.basis, price: 0, gainLose: 0, quantity: item.quantity, dividend: item.dividend)
             items.append(temp)
         }
         
         var total: Decimal = 0
         var totalBasis: Decimal = 0
         var dividendList: [DividendDisplayData] = []
-        let string: String = stockList.joined(separator: ",")
+        var list: [String] = []
+        for item in stockList {
+            if let value = item.symbol {
+                if list.contains(value) == false {
+                    list.append(value)
+                }
+            } else {
+                if let value = item.id, value.count <= 4 {
+                    list.append(value)
+                }
+            }
+        }
+        let string: String = list.joined(separator: ",")
         let stockData = await networkService.fetch(tickers: string)
         for item in stockData {
-            if let row = items.firstIndex(where: { $0.symbol == item.id }) {
-                items[row].price = Decimal(Double(item.price))
-                let gainLose = Decimal(items[row].quantity) * (Decimal(Double(item.price)) - items[row].basis)
-                items[row].gainLose = gainLose
-                total += gainLose
-                totalBasis += items[row].basis * Decimal(items[row].quantity)
-                if listName == .eliteDividendPayers, let dividends = items[row].dividend {
-                    let _ = dividends.map {
-                        dividendList.append(buildDividendList(array: $0, symbol: item.id))
+            items.indices.forEach { index in
+                if item.id == items[index].symbol {
+                    items[index].price = Decimal(Double(item.price))
+                    let gainLose = Decimal(items[index].quantity) * (Decimal(Double(item.price)) - items[index].basis)
+                    items[index].gainLose = gainLose
+                    total += gainLose
+                    totalBasis += items[index].basis * Decimal(items[index].quantity)
+                    if listName == .eliteDividendPayers, let dividends = items[index].dividend {
+                        let _ = dividends.map {
+                            dividendList.append(buildDividendList(array: $0, symbol: item.id))
+                        }
                     }
                 }
             }
         }
         
         let modelStock = await getSymbolList(listName: listName)
-
         return (items, total, modelStock, totalBasis, dividendList)
     }
     
@@ -164,9 +183,9 @@ class PortfolioService: ObservableObject {
         await firebaseService.addItem(listName: listName, symbol: item.symbol, quantity: item.quantity, basis: item.basis)
     }
     
-    func updateStock(listName: String, symbol: String, originalSymbol: String, quantity: Double, basis: String) async {
+    func updateStock(firestoreId: String, listName: String, symbol: String, originalSymbol: String, quantity: Double, basis: String) async {
         
-        await firebaseService.updateItem(listName: listName, symbol: symbol, originalSymbol: originalSymbol, quantity: quantity, basis: basis)
+        await firebaseService.updateItem(firestoreId: firestoreId, listName: listName, symbol: symbol, originalSymbol: originalSymbol, quantity: quantity, basis: basis)
     }
     
     func deleteStock(listName: String, symbol: String) async {

@@ -21,7 +21,7 @@ struct StockListView: View {
     @StateObject var networkService = NetworkService()
     @State var showingSheet: Bool = false
     @State var firstTime = true
-    @State var item: ItemData = ItemData(symbol: "Noname", basis: 0, price: 0, gainLose: 0, quantity: 0)
+    @State var item: ItemData = ItemData(firestoreId: "", symbol: "Noname", basis: 0, price: 0, gainLose: 0, quantity: 0)
     @State var total: Decimal = 0
     @State var totalBasis: Decimal = 0
     @State var totalDividend: Decimal = 0
@@ -51,7 +51,7 @@ struct StockListView: View {
                         Text("Qty")
                         Text("Basis $")
                         Text("Price $")
-                        Text("Total $")
+                        Text("Gain $")
                         Text("")
                     }
                     .underline()

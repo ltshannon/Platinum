@@ -17,6 +17,7 @@ struct StockDetailView: View {
     @State var basis: String = ""
     @State var price: String = ""
     @State var quantity: String = ""
+    @State var firestoreId: String = ""
     @State var originalSymbol: String = ""
     @State var originalBasis: String = ""
     @State var originalQuantity: String = ""
@@ -141,6 +142,7 @@ struct StockDetailView: View {
             originalBasis = basis
             originalSymbol = symbol
             originalQuantity = quantity
+            firestoreId = item.firestoreId
             updateDividendValues()
         }
         .alert(showAlertMessage, isPresented: $showAlert) {
@@ -214,7 +216,7 @@ struct StockDetailView: View {
         
         Task {
             dismiss()
-            await portfolioService.updateStock(listName: key.rawValue, symbol: symbol, originalSymbol: originalSymbol, quantity: Double(quantity) ?? 0, basis: basis)
+            await portfolioService.updateStock(firestoreId: firestoreId, listName: key.rawValue, symbol: symbol, originalSymbol: originalSymbol, quantity: Double(quantity) ?? 0, basis: basis)
             await updatePortfolio(key: key)
         }
     }
@@ -222,7 +224,7 @@ struct StockDetailView: View {
     func delete() {
         Task {
             dismiss()
-            await portfolioService.deleteStock(listName: key.rawValue, symbol: symbol)
+            await portfolioService.deleteStock(listName: key.rawValue, symbol: firestoreId)
             await updatePortfolio(key: key)
         }
     }
