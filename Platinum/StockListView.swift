@@ -14,6 +14,13 @@ let currencyFormatter: NumberFormatter = {
     return formatter
 }()
 
+let percentFormatter: NumberFormatter = {
+    let formatter = NumberFormatter()
+    formatter.numberStyle = .percent
+    formatter.currencySymbol = ""
+    return formatter
+}()
+
 struct StockListView: View {
     @EnvironmentObject var portfolioService: PortfolioService
     @EnvironmentObject var appNavigationState: AppNavigationState
@@ -21,20 +28,22 @@ struct StockListView: View {
     @StateObject var networkService = NetworkService()
     @State var showingSheet: Bool = false
     @State var firstTime = true
-    @State var item: ItemData = ItemData(firestoreId: "", symbol: "Noname", basis: 0, price: 0, gainLose: 0, quantity: 0)
+    @State var item: ItemData = ItemData(firestoreId: "", symbol: "Noname", basis: 0, price: 0, gainLose: 0, percent: 0, quantity: 0)
     @State var total: Decimal = 0
     @State var totalBasis: Decimal = 0
+    @State var totalPercent: Decimal = 0
     @State var totalDividend: Decimal = 0
     @State var items: [ItemData] = []
     @State var stockList: [String] = []
     @State var dividendList: [DividendDisplayData] = []
+    @State var isPercent: Bool = false
     let columns: [GridItem] = [
-                                GridItem(.fixed(55), spacing: 2),
-                                GridItem(.fixed(45), spacing: 2),
-                                GridItem(.fixed(80), spacing: 2),
-                                GridItem(.fixed(75), spacing: 2),
-                                GridItem(.fixed(80), spacing: 2),
-                                GridItem(.fixed(15), spacing: 2)
+                                GridItem(.fixed(55), spacing: 1),
+                                GridItem(.fixed(45), spacing: 1),
+                                GridItem(.fixed(80), spacing: 1),
+                                GridItem(.fixed(75), spacing: 1),
+                                GridItem(.fixed(80), spacing: 1),
+                                GridItem(.fixed(25), spacing: 1)
     ]
 
     var body: some View {
@@ -51,7 +60,12 @@ struct StockListView: View {
                         Text("Qty")
                         Text("Basis $")
                         Text("Price $")
-                        Text("Gain $")
+                        Button {
+                            isPercent.toggle()
+                        } label: {
+                            Text(isPercent ? "Gain %" : "Gain $")
+                                .underline()
+                        }
                         Text("")
                     }
                     .underline()
@@ -60,8 +74,13 @@ struct StockListView: View {
                         Text(item.quantity.truncatingRemainder(dividingBy: 1) > 0 ? "\(item.quantity, specifier: "%.2f")" : "\(item.quantity, specifier: "%.0f")")
                         Text("\(item.basis as NSDecimalNumber, formatter: currencyFormatter)")
                         Text("\(item.price as NSDecimalNumber, formatter: currencyFormatter)")
-                        Text("\(abs(item.gainLose) as NSDecimalNumber, formatter: currencyFormatter)")
-                            .foregroundStyle(item.gainLose < 0 ?.red : .green)
+                        if isPercent {
+                            Text("\(abs(item.percent) as NSDecimalNumber, formatter: percentFormatter)")
+                                .foregroundStyle(item.gainLose < 0 ?.red : .green)
+                        } else {
+                            Text("\(abs(item.gainLose) as NSDecimalNumber, formatter: currencyFormatter)")
+                                .foregroundStyle(item.gainLose < 0 ?.red : .green)
+                        }
                         Button {
                             let paramters = StockDetailParameters(key: key, item: item)
                             appNavigationState.stockDetailView(parameters: paramters)
@@ -148,7 +167,7 @@ struct StockListView: View {
             .refreshable {
                 pullToRefresh()
             }
-            .padding([.leading, .trailing], 10)
+            .padding([.leading, .trailing], 5)
             Spacer()
             Button {
                 showingSheet = true
@@ -190,6 +209,11 @@ struct StockListView: View {
                     self.total = total
                 }
             }
+            .onReceive(portfolioService.$eliteDividendPayersTotalPercent) { percent in
+                if key == .eliteDividendPayers {
+                    self.totalPercent = percent
+                }
+            }
             .onReceive(portfolioService.$eliteDividendPayersTotalBasis) { total in
                 if key == .eliteDividendPayers {
                     self.totalBasis = total
@@ -221,6 +245,11 @@ struct StockListView: View {
                     self.totalBasis = total
                 }
             }
+            .onReceive(portfolioService.$acceleratedProfitsTotalPercent) { total in
+                if key == .acceleratedProfits {
+                    self.totalPercent = total
+                }
+            }
             .onReceive(portfolioService.$acceleratedProfitsStockList) { stockList in
                 if key == .acceleratedProfits {
                     self.stockList = stockList
@@ -239,6 +268,11 @@ struct StockListView: View {
             .onReceive(portfolioService.$breakthroughTotalBasis) { total in
                 if key == .breakthroughStocks {
                     self.totalBasis = total
+                }
+            }
+            .onReceive(portfolioService.$breakthroughTotalPercent) { total in
+                if key == .breakthroughStocks {
+                    self.totalPercent = total
                 }
             }
             .onReceive(portfolioService.$breakthroughStockList) { stockList in
@@ -261,6 +295,11 @@ struct StockListView: View {
                     self.totalBasis = total
                 }
             }
+            .onReceive(portfolioService.$growthInvestorTotalPercent) { total in
+                if key == .growthInvestor {
+                    self.totalPercent = total
+                }
+            }
             .onReceive(portfolioService.$growthInvestorStockList) { stockList in
                 if key == .growthInvestor {
                     self.stockList = stockList
@@ -281,6 +320,11 @@ struct StockListView: View {
                     self.totalBasis = total
                 }
             }
+            .onReceive(portfolioService.$buyTotalPercent) { total in
+                if key == .buy {
+                    self.totalPercent = total
+                }
+            }
             .onReceive(portfolioService.$buyStockList) { stockList in
                 if key == .buy {
                     self.stockList = stockList
@@ -294,6 +338,11 @@ struct StockListView: View {
             .onReceive(portfolioService.$sellTotal) { total in
                 if key == .sell {
                     self.total = total
+                }
+            }
+            .onReceive(portfolioService.$sellTotalPercent) { total in
+                if key == .sell {
+                    self.totalPercent = total
                 }
             }
             .onReceive(portfolioService.$sellTotalBasis) { total in
@@ -338,34 +387,41 @@ struct StockListView: View {
                 stockList = result.2
                 totalBasis = result.3
                 dividendList = result.4
+                totalPercent = result.5
                 totalDividend = portfolioService.computeDividendTotal(list: result.4)
                 switch key {
                 case .acceleratedProfits:
                     portfolioService.acceleratedProfitsList = result.0
                     portfolioService.acceleratedProfitsTotal = result.1
                     portfolioService.acceleratedProfitsStockList = result.2
+                    portfolioService.acceleratedProfitsTotalPercent = result.5
                 case .breakthroughStocks:
                     portfolioService.breakthroughList = result.0
                     portfolioService.breakthroughTotal = result.1
                     portfolioService.breakthroughStockList = result.2
+                    portfolioService.breakthroughTotalPercent = result.5
                 case .eliteDividendPayers:
                     portfolioService.eliteDividendPayersList = result.0
                     portfolioService.eliteDividendPayersTotal = result.1
                     portfolioService.eliteDividendPayersStockList = result.2
                     portfolioService.eliteDividendPayersTotalBasis = result.3
                     portfolioService.eliteDividendPayersDividendList = result.4
+                    portfolioService.eliteDividendPayersTotalPercent = result.5
                 case .growthInvestor:
                     portfolioService.growthInvestorList = result.0
                     portfolioService.growthInvestorTotal = result.1
                     portfolioService.growthInvestorStockList = result.2
+                    portfolioService.growthInvestorTotalPercent = result.5
                 case .buy:
                     portfolioService.buyList = result.0
                     portfolioService.buyTotal = result.1
                     portfolioService.buyStockList = result.2
+                    portfolioService.buyTotalPercent = result.5
                 case .sell:
                     portfolioService.sellList = result.0
                     portfolioService.sellTotal = result.1
                     portfolioService.sellStockList = result.2
+                    portfolioService.sellTotalPercent = result.5
                 }
                 portfolioService.showingProgress = false
             }

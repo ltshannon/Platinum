@@ -36,27 +36,33 @@ class PortfolioService: ObservableObject {
     var networkService = NetworkService()
     @Published var acceleratedProfitsList: [ItemData] = []
     @Published var acceleratedProfitsTotal: Decimal = 0
+    @Published var acceleratedProfitsTotalPercent: Decimal = 0
     @Published var acceleratedProfitsTotalBasis: Decimal = 0
     @Published var acceleratedProfitsStockList: [String] = []
     @Published var breakthroughList: [ItemData] = []
     @Published var breakthroughTotal: Decimal = 0
+    @Published var breakthroughTotalPercent: Decimal = 0
     @Published var breakthroughTotalBasis: Decimal = 0
     @Published var breakthroughStockList: [String] = []
     @Published var eliteDividendPayersList: [ItemData] = []
     @Published var eliteDividendPayersTotal: Decimal = 0
+    @Published var eliteDividendPayersTotalPercent: Decimal = 0
     @Published var eliteDividendPayersTotalBasis: Decimal = 0
     @Published var eliteDividendPayersDividendList: [DividendDisplayData] = []
     @Published var eliteDividendPayersStockList: [String] = []
     @Published var growthInvestorList: [ItemData] = []
     @Published var growthInvestorTotal: Decimal = 0
+    @Published var growthInvestorTotalPercent: Decimal = 0
     @Published var growthInvestorTotalBasis: Decimal = 0
     @Published var growthInvestorStockList: [String] = []
     @Published var buyList: [ItemData] = []
     @Published var buyTotal: Decimal = 0
     @Published var buyTotalBasis: Decimal = 0
+    @Published var buyTotalPercent: Decimal = 0
     @Published var buyStockList: [String] = []
     @Published var sellList: [ItemData] = []
     @Published var sellTotal: Decimal = 0
+    @Published var sellTotalPercent: Decimal = 0
     @Published var sellTotalBasis: Decimal = 0
     @Published var sellStockList: [String] = []
     @Published var stockList: [String] = []
@@ -75,32 +81,38 @@ class PortfolioService: ObservableObject {
             acceleratedProfitsTotal = await result1.1
             acceleratedProfitsStockList = await result1.2
             acceleratedProfitsTotalBasis = await result1.3
+            acceleratedProfitsTotalPercent = await result1.5
             breakthroughList = await result2.0
             breakthroughTotal = await result2.1
             breakthroughStockList = await result2.2
             breakthroughTotalBasis = await result2.3
+            breakthroughTotalPercent = await result2.5
             eliteDividendPayersList = await result3.0
             eliteDividendPayersTotal = await result3.1
             eliteDividendPayersStockList = await result3.2
             eliteDividendPayersTotalBasis = await result3.3
             eliteDividendPayersDividendList = await result3.4
+            eliteDividendPayersTotalPercent = await result3.5
             growthInvestorList = await result4.0
             growthInvestorTotal = await result4.1
             growthInvestorStockList = await result4.2
             growthInvestorTotalBasis = await result4.3
+            growthInvestorTotalPercent = await result4.5
             buyList = await result5.0
             buyTotal = await result5.1
             buyStockList = await result5.2
             buyTotalBasis = await result5.3
+            buyTotalPercent = await result5.5
             sellList = await result6.0
             sellTotal = await result6.1
             sellStockList = await result6.2
             sellTotalBasis = await result6.3
+            sellTotalPercent = await result6.5
             showingProgress = false
         }
     }
     
-    func getPortfolio(listName: PortfolioType) async -> ([ItemData], Decimal, [String], Decimal, [DividendDisplayData]) {
+    func getPortfolio(listName: PortfolioType) async -> ([ItemData], Decimal, [String], Decimal, [DividendDisplayData], Decimal) {
         
         let stockList = await firebaseService.getStockList(listName: listName.rawValue)
         let data = await firebaseService.getPortfolioList(stockList: stockList, listName: listName)
@@ -112,12 +124,13 @@ class PortfolioService: ObservableObject {
             } else {
                 value = item.id ?? "NA"
             }
-            let temp = ItemData(firestoreId: item.id ?? "n/a", symbol: value, basis: item.basis, price: 0, gainLose: 0, quantity: item.quantity, dividend: item.dividend)
+            let temp = ItemData(firestoreId: item.id ?? "n/a", symbol: value, basis: item.basis, price: 0, gainLose: 0, percent: 0, quantity: item.quantity, dividend: item.dividend)
             items.append(temp)
         }
         
         var total: Decimal = 0
         var totalBasis: Decimal = 0
+        var totalPercent: Decimal = 0
         var dividendList: [DividendDisplayData] = []
         var list: [String] = []
         for item in stockList {
@@ -137,7 +150,9 @@ class PortfolioService: ObservableObject {
             items.indices.forEach { index in
                 if item.id == items[index].symbol {
                     items[index].price = Decimal(Double(item.price))
-                    let gainLose = Decimal(items[index].quantity) * (Decimal(Double(item.price)) - items[index].basis)
+                    let value = Decimal(Double(item.price)) - items[index].basis
+                    items[index].percent = value / items[index].basis
+                    let gainLose = Decimal(items[index].quantity) * value
                     items[index].gainLose = gainLose
                     total += gainLose
                     totalBasis += items[index].basis * Decimal(items[index].quantity)
@@ -151,7 +166,7 @@ class PortfolioService: ObservableObject {
         }
         
         let modelStock = await getSymbolList(listName: listName)
-        return (items, total, modelStock, totalBasis, dividendList)
+        return (items, total, modelStock, totalBasis, dividendList, totalPercent)
     }
     
     func getSymbolList(listName: PortfolioType) async -> [String] {
