@@ -132,7 +132,7 @@ class FirebaseService: ObservableObject {
                 let querySnapshot = try await database.collection("users").document(user.uid).collection(listName.rawValue).document(id).getDocument()
                 if querySnapshot.exists {
                     var data = try querySnapshot.data(as: PortfolioItem.self)
-                    if let showSold = data.isSold, showSold == true {
+                    if let value = data.isSold, showSold == false {
                         continue
                     }
                     if let stock = data.symbol {

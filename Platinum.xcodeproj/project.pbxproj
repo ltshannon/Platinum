@@ -27,6 +27,7 @@
 		B136CA4F2C2917AA00A23278 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = B136CA4E2C2917AA00A23278 /* FirebaseStorage */; };
 		B14694AA2C3A086100B3C8FE /* AllocationAndModelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14694A92C3A086100B3C8FE /* AllocationAndModelView.swift */; };
 		B14694AD2C3A08F700B3C8FE /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = B14694AC2C3A08F700B3C8FE /* SwiftSoup */; };
+		B151C64B2CC9A054003329BA /* SettingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B151C64A2CC9A054003329BA /* SettingService.swift */; };
 		B178406A2C40AC9B00B55B96 /* AllocationToolView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17840692C40AC9B00B55B96 /* AllocationToolView.swift */; };
 		B178406C2C41EC0200B55B96 /* ModelPortfolioView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B178406B2C41EC0200B55B96 /* ModelPortfolioView.swift */; };
 		B18432A12C4C726600781E04 /* DividendEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B18432A02C4C726600781E04 /* DividendEditView.swift */; };
@@ -66,6 +67,7 @@
 		B136CA422C28F2B100A23278 /* TotalsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TotalsView.swift; sourceTree = "<group>"; };
 		B136CA502C2A377700A23278 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		B14694A92C3A086100B3C8FE /* AllocationAndModelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllocationAndModelView.swift; sourceTree = "<group>"; };
+		B151C64A2CC9A054003329BA /* SettingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingService.swift; sourceTree = "<group>"; };
 		B17840692C40AC9B00B55B96 /* AllocationToolView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllocationToolView.swift; sourceTree = "<group>"; };
 		B178406B2C41EC0200B55B96 /* ModelPortfolioView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelPortfolioView.swift; sourceTree = "<group>"; };
 		B18432A02C4C726600781E04 /* DividendEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendEditView.swift; sourceTree = "<group>"; };
@@ -113,6 +115,7 @@
 				B1FD8AE72C1A5CFD000D0F37 /* NetworkService.swift */,
 				B136CA272C23A93700A23278 /* StorageService.swift */,
 				B136CA402C24FC3400A23278 /* PortfolioService.swift */,
+				B151C64A2CC9A054003329BA /* SettingService.swift */,
 				B18B321B2C3CCD11006661E0 /* PlatinumGrowthModel.swift */,
 			);
 			path = Services;
@@ -288,6 +291,7 @@
 				B18432AD2C61540F00781E04 /* AddSymbolView.swift in Sources */,
 				B18432A32C4CB03F00781E04 /* DividendCreateView.swift in Sources */,
 				B18432B42C619BFA00781E04 /* EditSymbolsView.swift in Sources */,
+				B151C64B2CC9A054003329BA /* SettingService.swift in Sources */,
 				B18432B12C619A0200781E04 /* DeleteSymbolView.swift in Sources */,
 				B1C51BDE2C3CD535004FA294 /* DisplayModelPortfolioView.swift in Sources */,
 				B136CA432C28F2B100A23278 /* TotalsView.swift in Sources */,
@@ -445,7 +449,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.5;
-				MARKETING_VERSION = 1.7;
+				MARKETING_VERSION = 1.8;
 				PRODUCT_BUNDLE_IDENTIFIER = com.breakawaydesign.Platinum;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
@@ -488,7 +492,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.5;
-				MARKETING_VERSION = 1.7;
+				MARKETING_VERSION = 1.8;
 				PRODUCT_BUNDLE_IDENTIFIER = com.breakawaydesign.Platinum;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;

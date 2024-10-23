@@ -112,10 +112,10 @@ class PortfolioService: ObservableObject {
         }
     }
     
-    func getPortfolio(listName: PortfolioType, showSold: Bool = false) async -> ([ItemData], Decimal, [String], Decimal, [DividendDisplayData], Decimal) {
-        
+    func getPortfolio(listName: PortfolioType) async -> ([ItemData], Decimal, [String], Decimal, [DividendDisplayData], Decimal) {
+        let settingService = SettingsService.shared
         let stockList = await firebaseService.getStockList(listName: listName.rawValue)
-        let data = await firebaseService.getPortfolioList(stockList: stockList, listName: listName, showSold: showSold)
+        let data = await firebaseService.getPortfolioList(stockList: stockList, listName: listName, showSold: settingService.isShowSoldStocks)
         var items: [ItemData] = []
         for item in data {
             var value = ""

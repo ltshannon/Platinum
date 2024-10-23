@@ -24,6 +24,7 @@ let percentFormatter: NumberFormatter = {
 struct StockListView: View {
     @EnvironmentObject var portfolioService: PortfolioService
     @EnvironmentObject var appNavigationState: AppNavigationState
+    @StateObject var settingsService = SettingsService.shared
     var key: PortfolioType
     @StateObject var networkService = NetworkService()
     @State var showingSheet: Bool = false
@@ -47,327 +48,318 @@ struct StockListView: View {
     ]
 
     var body: some View {
-        NavigationStack(path: $appNavigationState.dividendNavigation) {
-            ScrollView {
-                if portfolioService.showingProgress {
-                    ProgressView("Loading...")
-                        .progressViewStyle(CircularProgressViewStyle(tint: Color.blue))
-                        .padding(.trailing, 30)
+        ScrollView {
+            if portfolioService.showingProgress {
+                ProgressView("Loading...")
+                    .progressViewStyle(CircularProgressViewStyle(tint: Color.blue))
+                    .padding(.trailing, 30)
+            }
+            LazyVGrid(columns: columns, alignment: .leading) {
+                Group {
+                    Text("Sym")
+                    Text("Qty")
+                    Text("Basis $")
+                    Text("Price $")
+                    Button {
+                        isPercent.toggle()
+                    } label: {
+                        Text(isPercent ? "Gain %" : "Gain $")
+                            .underline()
+                    }
+                    Text("")
                 }
-                LazyVGrid(columns: columns, alignment: .leading) {
+                .underline()
+                ForEach(items, id: \.id) { item in
+                    Text("\(item.symbol)")
+                    Text(item.quantity.truncatingRemainder(dividingBy: 1) > 0 ? "\(item.quantity, specifier: "%.2f")" : "\(item.quantity, specifier: "%.0f")")
+                    Text("\(item.basis as NSDecimalNumber, formatter: currencyFormatter)")
+                    Text("\(item.price as NSDecimalNumber, formatter: currencyFormatter)")
+                    if isPercent {
+                        Text("\(abs(item.percent) as NSDecimalNumber, formatter: percentFormatter)")
+                            .foregroundStyle(item.gainLose < 0 ?.red : .green)
+                    } else {
+                        Text("\(abs(item.gainLose) as NSDecimalNumber, formatter: currencyFormatter)")
+                            .foregroundStyle(item.gainLose < 0 ?.red : .green)
+                    }
+                    Button {
+                        let paramters = StockDetailParameters(key: key, item: item)
+                        appNavigationState.stockDetailView(parameters: paramters)
+                    } label: {
+                        Image(systemName: "pencil")
+                    }
+                }
+                Group {
+                    Text("")
+                    Text("")
+                    Text("---------")
+                    Text("")
+                    Text("---------")
+                    Text("")
+                }
+                Group {
+                    Text("Total")
+                    Text("")
+                    Text("\(totalBasis as NSDecimalNumber, formatter: currencyFormatter)")
+                    Text("")
+                    Text("\(total as NSDecimalNumber, formatter: currencyFormatter)")
+                        .foregroundStyle(total < 0 ? .red : .green)
+                    Text("")
+                }
+                if key == .eliteDividendPayers {
                     Group {
-                        Text("Sym")
-                        Text("Qty")
-                        Text("Basis $")
-                        Text("Price $")
-                        Button {
-                            isPercent.toggle()
-                        } label: {
-                            Text(isPercent ? "Gain %" : "Gain $")
-                                .underline()
-                        }
-                        Text("")
-                    }
-                    .underline()
-                    ForEach(items, id: \.id) { item in
-                        Text("\(item.symbol)")
-                        Text(item.quantity.truncatingRemainder(dividingBy: 1) > 0 ? "\(item.quantity, specifier: "%.2f")" : "\(item.quantity, specifier: "%.0f")")
-                        Text("\(item.basis as NSDecimalNumber, formatter: currencyFormatter)")
-                        Text("\(item.price as NSDecimalNumber, formatter: currencyFormatter)")
-                        if isPercent {
-                            Text("\(abs(item.percent) as NSDecimalNumber, formatter: percentFormatter)")
-                                .foregroundStyle(item.gainLose < 0 ?.red : .green)
-                        } else {
-                            Text("\(abs(item.gainLose) as NSDecimalNumber, formatter: currencyFormatter)")
-                                .foregroundStyle(item.gainLose < 0 ?.red : .green)
-                        }
-                        Button {
-                            let paramters = StockDetailParameters(key: key, item: item)
-                            appNavigationState.stockDetailView(parameters: paramters)
-                        } label: {
-                            Image(systemName: "pencil")
-                        }
-                    }
-                    Group {
-                        Text("")
-                        Text("")
-                        Text("---------")
-                        Text("")
-                        Text("---------")
-                        Text("")
-                    }
-                    Group {
-                        Text("Total")
-                        Text("")
-                        Text("\(totalBasis as NSDecimalNumber, formatter: currencyFormatter)")
-                        Text("")
-                        Text("\(total as NSDecimalNumber, formatter: currencyFormatter)")
-                            .foregroundStyle(total < 0 ? .red : .green)
-                        Text("")
-                    }
-                    if key == .eliteDividendPayers {
                         Group {
-                            Group {
-                                Text("")
-                                Text("")
-                                Text("")
-                                Text("")
-                                Text("")
-                                Text("")
+                            Text("")
+                            Text("")
+                            Text("")
+                            Text("")
+                            Text("")
+                            Text("")
+                        }
+                        Group {
+                            Text("")
+                            Text("")
+                            Text("Dividends")
+                            Text("")
+                            Text("")
+                            Text("")
+                        }
+                        Group {
+                            Text("")
+                            Text("")
+                            Text("----------")
+                            Text("")
+                            Text("")
+                            Text("")
+                        }
+                        ForEach(dividendList, id: \.id) { dividend in
+                            Text("")
+                            Text("")
+                            Text("\(dividend.symbol)")
+                            Text("\(dividend.date)")
+                            Text("\(dividend.price as NSDecimalNumber, formatter: currencyFormatter)")
+                            Button {
+                                let parameters = DividendEditParameters(key: key, item: item, dividendDisplayData: dividend)
+                                appNavigationState.dividendEditView(parameters: parameters)
+                            } label: {
+                                Image(systemName: "pencil")
                             }
-                            Group {
-                                Text("")
-                                Text("")
-                                Text("Dividends")
-                                Text("")
-                                Text("")
-                                Text("")
-                            }
-                            Group {
-                                Text("")
-                                Text("")
-                                Text("----------")
-                                Text("")
-                                Text("")
-                                Text("")
-                            }
-                            ForEach(dividendList, id: \.id) { dividend in
-                                Text("")
-                                Text("")
-                                Text("\(dividend.symbol)")
-                                Text("\(dividend.date)")
-                                Text("\(dividend.price as NSDecimalNumber, formatter: currencyFormatter)")
-                                Button {
-                                    let parameters = DividendEditParameters(key: key, item: item, dividendDisplayData: dividend)
-                                    appNavigationState.dividendEditView(parameters: parameters)
-                                } label: {
-                                    Image(systemName: "pencil")
-                                }
-                            }
-                            Group {
-                                Text("")
-                                Text("")
-                                Text("")
-                                Text("")
-                                Text("---------")
-                                Text("")
-                            }
-                            Group {
-                                Text("Total")
-                                Text("")
-                                Text("")
-                                Text("")
-                                Text("\(totalDividend as NSDecimalNumber, formatter: currencyFormatter)")
-                                Text("")
-                            }
+                        }
+                        Group {
+                            Text("")
+                            Text("")
+                            Text("")
+                            Text("")
+                            Text("---------")
+                            Text("")
+                        }
+                        Group {
+                            Text("Total")
+                            Text("")
+                            Text("")
+                            Text("")
+                            Text("\(totalDividend as NSDecimalNumber, formatter: currencyFormatter)")
+                            Text("")
                         }
                     }
                 }
             }
-            .refreshable {
-                pullToRefresh()
+        }
+        .refreshable {
+            pullToRefresh()
+        }
+        .padding([.leading, .trailing], 5)
+        Spacer()
+        Button {
+            showingSheet = true
+        } label: {
+            VStack(alignment: .center) {
+                Image(systemName: "plus.circle")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 50, height: 50)
+                Text("Add Stock")
             }
-            .padding([.leading, .trailing], 5)
-            Spacer()
-            Button {
-                showingSheet = true
-            } label: {
-                VStack(alignment: .center) {
-                    Image(systemName: "plus.circle")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 50, height: 50)
-                    Text("Add Stock")
-                }
+        }
+        Spacer()
+        .onAppear {
+            switch key {
+            case .acceleratedProfits:
+                items = portfolioService.acceleratedProfitsList
+            case .breakthroughStocks:
+                items = portfolioService.breakthroughList
+            case .eliteDividendPayers:
+                items = portfolioService.eliteDividendPayersList
+                dividendList = portfolioService.eliteDividendPayersDividendList
+                totalDividend = portfolioService.computeDividendTotal(list: dividendList)
+            case .growthInvestor:
+                items = portfolioService.growthInvestorList
+            case .buy:
+                items = portfolioService.buyList
+            case .sell:
+                items = portfolioService.sellList
             }
-            Spacer()
-            .onAppear {
-                switch key {
-                case .acceleratedProfits:
-                    items = portfolioService.acceleratedProfitsList
-                case .breakthroughStocks:
-                    items = portfolioService.breakthroughList
-                case .eliteDividendPayers:
-                    items = portfolioService.eliteDividendPayersList
-                    dividendList = portfolioService.eliteDividendPayersDividendList
-                    totalDividend = portfolioService.computeDividendTotal(list: dividendList)
-                case .growthInvestor:
-                    items = portfolioService.growthInvestorList
-                case .buy:
-                    items = portfolioService.buyList
-                case .sell:
-                    items = portfolioService.sellList
-                }
+        }
+        .onChange(of: settingsService.isShowSoldStocks) { oldValue, newValue in
+            pullToRefresh()
+        }
+        .onReceive(portfolioService.$eliteDividendPayersList) { list in
+            if key == .eliteDividendPayers {
+                self.items = list
             }
-            .onReceive(portfolioService.$eliteDividendPayersList) { list in
-                if key == .eliteDividendPayers {
-                    self.items = list
-                }
+        }
+        .onReceive(portfolioService.$eliteDividendPayersTotal) { total in
+            if key == .eliteDividendPayers {
+                self.total = total
             }
-            .onReceive(portfolioService.$eliteDividendPayersTotal) { total in
-                if key == .eliteDividendPayers {
-                    self.total = total
-                }
+        }
+        .onReceive(portfolioService.$eliteDividendPayersTotalPercent) { percent in
+            if key == .eliteDividendPayers {
+                self.totalPercent = percent
             }
-            .onReceive(portfolioService.$eliteDividendPayersTotalPercent) { percent in
-                if key == .eliteDividendPayers {
-                    self.totalPercent = percent
-                }
+        }
+        .onReceive(portfolioService.$eliteDividendPayersTotalBasis) { total in
+            if key == .eliteDividendPayers {
+                self.totalBasis = total
             }
-            .onReceive(portfolioService.$eliteDividendPayersTotalBasis) { total in
-                if key == .eliteDividendPayers {
-                    self.totalBasis = total
-                }
+        }
+        .onReceive(portfolioService.$eliteDividendPayersDividendList) { list in
+            if key == .eliteDividendPayers {
+                self.dividendList = list
+                totalDividend = portfolioService.computeDividendTotal(list: list)
             }
-            .onReceive(portfolioService.$eliteDividendPayersDividendList) { list in
-                if key == .eliteDividendPayers {
-                    self.dividendList = list
-                    totalDividend = portfolioService.computeDividendTotal(list: list)
-                }
+        }
+        .onReceive(portfolioService.$eliteDividendPayersStockList) { stockList in
+            if key == .eliteDividendPayers {
+                self.stockList = stockList
             }
-            .onReceive(portfolioService.$eliteDividendPayersStockList) { stockList in
-                if key == .eliteDividendPayers {
-                    self.stockList = stockList
-                }
+        }
+        .onReceive(portfolioService.$acceleratedProfitsList) { list in
+            if key == .acceleratedProfits {
+                self.items = list
             }
-            .onReceive(portfolioService.$acceleratedProfitsList) { list in
-                if key == .acceleratedProfits {
-                    self.items = list
-                }
+        }
+        .onReceive(portfolioService.$acceleratedProfitsTotal) { total in
+            if key == .acceleratedProfits {
+                self.total = total
             }
-            .onReceive(portfolioService.$acceleratedProfitsTotal) { total in
-                if key == .acceleratedProfits {
-                    self.total = total
-                }
+        }
+        .onReceive(portfolioService.$acceleratedProfitsTotalBasis) { total in
+            if key == .acceleratedProfits {
+                self.totalBasis = total
             }
-            .onReceive(portfolioService.$acceleratedProfitsTotalBasis) { total in
-                if key == .acceleratedProfits {
-                    self.totalBasis = total
-                }
+        }
+        .onReceive(portfolioService.$acceleratedProfitsTotalPercent) { total in
+            if key == .acceleratedProfits {
+                self.totalPercent = total
             }
-            .onReceive(portfolioService.$acceleratedProfitsTotalPercent) { total in
-                if key == .acceleratedProfits {
-                    self.totalPercent = total
-                }
+        }
+        .onReceive(portfolioService.$acceleratedProfitsStockList) { stockList in
+            if key == .acceleratedProfits {
+                self.stockList = stockList
             }
-            .onReceive(portfolioService.$acceleratedProfitsStockList) { stockList in
-                if key == .acceleratedProfits {
-                    self.stockList = stockList
-                }
+        }
+        .onReceive(portfolioService.$breakthroughList) { list in
+            if key == .breakthroughStocks {
+                self.items = list
             }
-            .onReceive(portfolioService.$breakthroughList) { list in
-                if key == .breakthroughStocks {
-                    self.items = list
-                }
+        }
+        .onReceive(portfolioService.$breakthroughTotal) { total in
+            if key == .breakthroughStocks {
+                self.total = total
             }
-            .onReceive(portfolioService.$breakthroughTotal) { total in
-                if key == .breakthroughStocks {
-                    self.total = total
-                }
+        }
+        .onReceive(portfolioService.$breakthroughTotalBasis) { total in
+            if key == .breakthroughStocks {
+                self.totalBasis = total
             }
-            .onReceive(portfolioService.$breakthroughTotalBasis) { total in
-                if key == .breakthroughStocks {
-                    self.totalBasis = total
-                }
+        }
+        .onReceive(portfolioService.$breakthroughTotalPercent) { total in
+            if key == .breakthroughStocks {
+                self.totalPercent = total
             }
-            .onReceive(portfolioService.$breakthroughTotalPercent) { total in
-                if key == .breakthroughStocks {
-                    self.totalPercent = total
-                }
+        }
+        .onReceive(portfolioService.$breakthroughStockList) { stockList in
+            if key == .breakthroughStocks {
+                self.stockList = stockList
             }
-            .onReceive(portfolioService.$breakthroughStockList) { stockList in
-                if key == .breakthroughStocks {
-                    self.stockList = stockList
-                }
+        }
+        .onReceive(portfolioService.$growthInvestorList) { list in
+            if key == .growthInvestor {
+                self.items = list
             }
-            .onReceive(portfolioService.$growthInvestorList) { list in
-                if key == .growthInvestor {
-                    self.items = list
-                }
+        }
+        .onReceive(portfolioService.$growthInvestorTotal) { total in
+            if key == .growthInvestor {
+                self.total = total
             }
-            .onReceive(portfolioService.$growthInvestorTotal) { total in
-                if key == .growthInvestor {
-                    self.total = total
-                }
+        }
+        .onReceive(portfolioService.$growthInvestorTotalBasis) { total in
+            if key == .growthInvestor {
+                self.totalBasis = total
             }
-            .onReceive(portfolioService.$growthInvestorTotalBasis) { total in
-                if key == .growthInvestor {
-                    self.totalBasis = total
-                }
+        }
+        .onReceive(portfolioService.$growthInvestorTotalPercent) { total in
+            if key == .growthInvestor {
+                self.totalPercent = total
             }
-            .onReceive(portfolioService.$growthInvestorTotalPercent) { total in
-                if key == .growthInvestor {
-                    self.totalPercent = total
-                }
+        }
+        .onReceive(portfolioService.$growthInvestorStockList) { stockList in
+            if key == .growthInvestor {
+                self.stockList = stockList
             }
-            .onReceive(portfolioService.$growthInvestorStockList) { stockList in
-                if key == .growthInvestor {
-                    self.stockList = stockList
-                }
+        }
+        .onReceive(portfolioService.$buyList) { items in
+            if key == .buy {
+                self.items = items
             }
-            .onReceive(portfolioService.$buyList) { items in
-                if key == .buy {
-                    self.items = items
-                }
+        }
+        .onReceive(portfolioService.$buyTotal) { total in
+            if key == .buy {
+                self.total = total
             }
-            .onReceive(portfolioService.$buyTotal) { total in
-                if key == .buy {
-                    self.total = total
-                }
+        }
+        .onReceive(portfolioService.$buyTotalBasis) { total in
+            if key == .buy {
+                self.totalBasis = total
             }
-            .onReceive(portfolioService.$buyTotalBasis) { total in
-                if key == .buy {
-                    self.totalBasis = total
-                }
+        }
+        .onReceive(portfolioService.$buyTotalPercent) { total in
+            if key == .buy {
+                self.totalPercent = total
             }
-            .onReceive(portfolioService.$buyTotalPercent) { total in
-                if key == .buy {
-                    self.totalPercent = total
-                }
+        }
+        .onReceive(portfolioService.$buyStockList) { stockList in
+            if key == .buy {
+                self.stockList = stockList
             }
-            .onReceive(portfolioService.$buyStockList) { stockList in
-                if key == .buy {
-                    self.stockList = stockList
-                }
+        }
+        .onReceive(portfolioService.$sellList) { items in
+            if key == .sell {
+                self.items = items
             }
-            .onReceive(portfolioService.$sellList) { items in
-                if key == .sell {
-                    self.items = items
-                }
+        }
+        .onReceive(portfolioService.$sellTotal) { total in
+            if key == .sell {
+                self.total = total
             }
-            .onReceive(portfolioService.$sellTotal) { total in
-                if key == .sell {
-                    self.total = total
-                }
+        }
+        .onReceive(portfolioService.$sellTotalPercent) { total in
+            if key == .sell {
+                self.totalPercent = total
             }
-            .onReceive(portfolioService.$sellTotalPercent) { total in
-                if key == .sell {
-                    self.totalPercent = total
-                }
+        }
+        .onReceive(portfolioService.$sellTotalBasis) { total in
+            if key == .sell {
+                self.totalBasis = total
             }
-            .onReceive(portfolioService.$sellTotalBasis) { total in
-                if key == .sell {
-                    self.totalBasis = total
-                }
+        }
+        .onReceive(portfolioService.$sellStockList) { stockList in
+            if key == .sell {
+                self.stockList = stockList
             }
-            .onReceive(portfolioService.$sellStockList) { stockList in
-                if key == .sell {
-                    self.stockList = stockList
-                }
-            }
-            .fullScreenCover(isPresented: $showingSheet, onDismiss: didDismiss) {
-                AddingNewStockView(key: key, stockList: stockList)
-            }
-            .navigationDestination(for: DividendNavDestination.self) { state in
-                switch state {
-                case .stockDetailView(let parameters):
-                    StockDetailView(paramters: parameters)
-                case .dividendCreateView(_):
-                    EmptyView()
-                case .dividendEditView(let parameters):
-                    DividendEditView(parameters: parameters)
-                }
-            }
+        }
+        .fullScreenCover(isPresented: $showingSheet, onDismiss: didDismiss) {
+            AddingNewStockView(key: key, stockList: stockList)
         }
     }
     
