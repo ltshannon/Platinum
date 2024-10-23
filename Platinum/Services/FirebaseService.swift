@@ -24,6 +24,7 @@ struct PortfolioItem: Codable, Identifiable, Hashable {
     var dividend: [String]?
     var symbol: String?
     var isSold: Bool?
+    var price: Decimal?
 }
 
 struct ModelStock: Codable, Identifiable, Hashable {
@@ -132,7 +133,7 @@ class FirebaseService: ObservableObject {
                 let querySnapshot = try await database.collection("users").document(user.uid).collection(listName.rawValue).document(id).getDocument()
                 if querySnapshot.exists {
                     var data = try querySnapshot.data(as: PortfolioItem.self)
-                    if let value = data.isSold, showSold == false {
+                    if let _ = data.isSold, showSold == false {
                         continue
                     }
                     if let stock = data.symbol {

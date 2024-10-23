@@ -36,7 +36,7 @@ struct GrowClubPortfolioView: View {
                     StockListView(key: .sell)
                 }
             }
-            .navigationTitle("Platinum Growth Club")
+            .navigationTitle("Platinum Growth")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Menu {

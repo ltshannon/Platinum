@@ -29,7 +29,7 @@ struct StockListView: View {
     @StateObject var networkService = NetworkService()
     @State var showingSheet: Bool = false
     @State var firstTime = true
-    @State var item: ItemData = ItemData(firestoreId: "", symbol: "Noname", basis: 0, price: 0, gainLose: 0, percent: 0, quantity: 0)
+    @State var item: ItemData = ItemData(firestoreId: "", symbol: "Noname", basis: 0, price: 0, gainLose: 0, percent: 0, quantity: 0, isSold: false)
     @State var total: Decimal = 0
     @State var totalBasis: Decimal = 0
     @State var totalPercent: Decimal = 0
@@ -71,6 +71,7 @@ struct StockListView: View {
                 .underline()
                 ForEach(items, id: \.id) { item in
                     Text("\(item.symbol)")
+                        .foregroundStyle(item.isSold ? .orange : .primary)
                     Text(item.quantity.truncatingRemainder(dividingBy: 1) > 0 ? "\(item.quantity, specifier: "%.2f")" : "\(item.quantity, specifier: "%.0f")")
                     Text("\(item.basis as NSDecimalNumber, formatter: currencyFormatter)")
                     Text("\(item.price as NSDecimalNumber, formatter: currencyFormatter)")

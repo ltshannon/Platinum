@@ -124,7 +124,13 @@ class PortfolioService: ObservableObject {
             } else {
                 value = item.id ?? "NA"
             }
-            let temp = ItemData(firestoreId: item.id ?? "n/a", symbol: value, basis: item.basis, price: 0, gainLose: 0, percent: 0, quantity: item.quantity, dividend: item.dividend)
+            var soldPrice:Decimal = 0.0
+            var isSold = false
+            if let value = item.price {
+                soldPrice = value
+                isSold = true
+            }
+            let temp = ItemData(firestoreId: item.id ?? "n/a", symbol: value, basis: item.basis, price: soldPrice, gainLose: 0, percent: 0, quantity: item.quantity, dividend: item.dividend, isSold: isSold)
             items.append(temp)
         }
         
@@ -149,8 +155,12 @@ class PortfolioService: ObservableObject {
         for item in stockData {
             items.indices.forEach { index in
                 if item.id == items[index].symbol {
-                    items[index].price = Decimal(Double(item.price))
-                    let value = Decimal(Double(item.price)) - items[index].basis
+                    var price: Decimal = items[index].price
+                    if items[index].isSold == false {
+                        price = Decimal(Double(item.price))
+                        items[index].price = price
+                    }
+                    let value = price - items[index].basis
                     items[index].percent = value / items[index].basis
                     let gainLose = Decimal(items[index].quantity) * value
                     items[index].gainLose = gainLose

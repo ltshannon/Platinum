@@ -93,7 +93,7 @@ struct AddingNewStockView: View {
     }
     
     func add() {
-        let item = ItemData(firestoreId: "", symbol: selectedStock, basis: Decimal(string: basis) ?? 0, price: 0, gainLose: 0, percent: 0, quantity: Double(quantity) ?? 0)
+        let item = ItemData(firestoreId: "", symbol: selectedStock, basis: Decimal(string: basis) ?? 0, price: 0, gainLose: 0, percent: 0, quantity: Double(quantity) ?? 0, isSold: false)
         Task {
             dismiss()
             await portfolioService.addStock(listName: key.rawValue, item: item)
