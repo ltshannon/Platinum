@@ -16,6 +16,7 @@ struct StockDetailView: View {
     @State var symbol: String = ""
     @State var basis: String = ""
     @State var price: String = ""
+    @State var soldPrice: String = ""
     @State var quantity: String = ""
     @State var firestoreId: String = ""
     @State var originalSymbol: String = ""
@@ -24,6 +25,7 @@ struct StockDetailView: View {
     @State var showAlert = false
     @State var showAlertMessage = ""
     @State var showDeleteAlert = false
+    @State var showSoldAlert = false
     @State private var showingPopover = false
     @State var dividendDisplayData: [DividendDisplayData] = []
     let currencyFormatter: NumberFormatter = {
@@ -114,6 +116,12 @@ struct StockDetailView: View {
             }
             .buttonStyle(.borderedProminent)
             Button {
+                showSoldAlert = true
+            } label: {
+                Text("Sold")
+            }
+            .buttonStyle(.borderedProminent)
+            Button {
                 showDeleteAlert = true
             } label: {
                 Text("Delete")
@@ -148,6 +156,14 @@ struct StockDetailView: View {
         .alert(showAlertMessage, isPresented: $showAlert) {
             Button("OK", role: .cancel) { }
         }
+        .alert("Update stock as sold", isPresented: $showSoldAlert) {
+            TextField("Price", text: $soldPrice)
+                .keyboardType(.numberPad)
+            Button("OK", action: sold)
+            Button("Cancel", role: .cancel) { }
+         } message: {
+            Text("Enter the price of what you sold the stock for.")
+         }
         .alert("Are you sure you want to delete this?", isPresented: $showDeleteAlert) {
             Button("Yes", role: .cancel) {
                 delete()
@@ -225,6 +241,14 @@ struct StockDetailView: View {
         Task {
             dismiss()
             await portfolioService.deleteStock(listName: key.rawValue, symbol: firestoreId)
+            await updatePortfolio(key: key)
+        }
+    }
+    
+    func sold() {
+        Task {
+            dismiss()
+            await portfolioService.soldStock(firestoreId: firestoreId, listName: key.rawValue, price: soldPrice)
             await updatePortfolio(key: key)
         }
     }

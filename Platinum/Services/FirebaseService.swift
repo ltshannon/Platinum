@@ -23,6 +23,7 @@ struct PortfolioItem: Codable, Identifiable, Hashable {
     var basis: Decimal
     var dividend: [String]?
     var symbol: String?
+    var isSold: Bool?
 }
 
 struct ModelStock: Codable, Identifiable, Hashable {
@@ -117,7 +118,8 @@ class FirebaseService: ObservableObject {
         }
     }
     
-    func getPortfolioList(stockList: [StockItem], listName: PortfolioType) async -> [PortfolioItem] {
+    func getPortfolioList(stockList: [StockItem], listName: PortfolioType, showSold: Bool) async -> [PortfolioItem] {
+        var id: String = ""
         guard let user = Auth.auth().currentUser else {
             return []
         }
@@ -125,15 +127,14 @@ class FirebaseService: ObservableObject {
         var portfolioItems: [PortfolioItem] = []
         for item in stockList {
             do {
-                var id: String = ""
-                if let symbol = item.symbol {
-                    id = item.id ?? "n/a"
-                } else {
-                    id = item.id ?? "n/a"
-                }
+                id = item.id ?? "n/a"
+                debugPrint("id: \(id) listName: \(listName.rawValue)")
                 let querySnapshot = try await database.collection("users").document(user.uid).collection(listName.rawValue).document(id).getDocument()
                 if querySnapshot.exists {
                     var data = try querySnapshot.data(as: PortfolioItem.self)
+                    if let showSold = data.isSold, showSold == true {
+                        continue
+                    }
                     if let stock = data.symbol {
                         data.symbol = stock
                     } else {
@@ -151,7 +152,7 @@ class FirebaseService: ObservableObject {
                 }
             }
             catch {
-                debugPrint("🧨", "Error reading stock items: \(error.localizedDescription)")
+                debugPrint("🧨", "id: \(id) listName: \(listName.rawValue) Error reading stock items: \(error.localizedDescription)")
             }
         }
         
@@ -395,6 +396,24 @@ class FirebaseService: ObservableObject {
             } catch {
                 debugPrint(String.boom, "updateItem: \(error)")
             }
+        }
+        
+    }
+    
+    func soldItem(firestoreId: String, listName: String, price: String) async {
+        guard let user = Auth.auth().currentUser else {
+            return
+        }
+        
+        let dec = Decimal(string: price) ?? 0
+        let value = [
+            "price": dec,
+            "isSold": true
+        ] as [String : Any]
+        do {
+            try await database.collection("users").document(user.uid).collection(listName).document(firestoreId).updateData(value)
+        } catch {
+            debugPrint(String.boom, "soldItem: \(error)")
         }
         
     }
