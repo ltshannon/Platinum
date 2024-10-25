@@ -54,7 +54,7 @@ struct DividendCreateView: View {
         debugPrint("dividendDate: \(dividendDate)")
         Task {
             await portfolioService.addDividend(listName: key.rawValue, symbol: symbol, dividendDate: dividendDate, dividendAmount: dividendAmount)
-            await portfolioService.getDividend(listName: key.rawValue, symbol: symbol)
+            await portfolioService.getDividend(key: key, symbol: symbol)
         }
     }
 

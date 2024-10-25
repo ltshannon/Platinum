@@ -24,7 +24,8 @@ let percentFormatter: NumberFormatter = {
 struct StockListView: View {
     @EnvironmentObject var portfolioService: PortfolioService
     @EnvironmentObject var appNavigationState: AppNavigationState
-    @StateObject var settingsService = SettingsService.shared
+    @EnvironmentObject var settingsService: SettingsService
+    @EnvironmentObject var searchService: SearchService
     var key: PortfolioType
     @StateObject var networkService = NetworkService()
     @State var showingSheet: Bool = false
@@ -69,7 +70,7 @@ struct StockListView: View {
                     Text("")
                 }
                 .underline()
-                ForEach(items, id: \.id) { item in
+                ForEach(searchResults, id: \.id) { item in
                     Text("\(item.symbol)")
                         .foregroundStyle(item.isSold ? .orange : .primary)
                     Text(item.quantity.truncatingRemainder(dividingBy: 1) > 0 ? "\(item.quantity, specifier: "%.2f")" : "\(item.quantity, specifier: "%.0f")")
@@ -106,7 +107,7 @@ struct StockListView: View {
                         .foregroundStyle(total < 0 ? .red : .green)
                     Text("")
                 }
-                if key == .eliteDividendPayers {
+//                if key == .eliteDividendPayers {
                     Group {
                         Group {
                             Text("")
@@ -161,7 +162,7 @@ struct StockListView: View {
                             Text("\(totalDividend as NSDecimalNumber, formatter: currencyFormatter)")
                             Text("")
                         }
-                    }
+//                    }
                 }
             }
         }
@@ -186,18 +187,28 @@ struct StockListView: View {
             switch key {
             case .acceleratedProfits:
                 items = portfolioService.acceleratedProfitsList
+                dividendList = portfolioService.acceleratedProfitsDividendList
+                totalDividend = portfolioService.computeDividendTotal(list: dividendList)
             case .breakthroughStocks:
                 items = portfolioService.breakthroughList
+                dividendList = portfolioService.breakthroughDividendList
+                totalDividend = portfolioService.computeDividendTotal(list: dividendList)
             case .eliteDividendPayers:
                 items = portfolioService.eliteDividendPayersList
                 dividendList = portfolioService.eliteDividendPayersDividendList
                 totalDividend = portfolioService.computeDividendTotal(list: dividendList)
             case .growthInvestor:
                 items = portfolioService.growthInvestorList
+                dividendList = portfolioService.growthInvestorDividendList
+                totalDividend = portfolioService.computeDividendTotal(list: dividendList)
             case .buy:
                 items = portfolioService.buyList
+                dividendList = portfolioService.buyDividendList
+                totalDividend = portfolioService.computeDividendTotal(list: dividendList)
             case .sell:
                 items = portfolioService.sellList
+                dividendList = portfolioService.sellDividendList
+                totalDividend = portfolioService.computeDividendTotal(list: dividendList)
             }
         }
         .onChange(of: settingsService.isShowSoldStocks) { oldValue, newValue in
@@ -364,6 +375,14 @@ struct StockListView: View {
         }
     }
     
+    var searchResults: [ItemData] {
+        if searchService.searchText.isEmpty {
+            return items
+        } else {
+            return items.filter { $0.symbol.contains(searchService.searchText.uppercased()) }
+        }
+    }
+    
     func pullToRefresh() {
         refreshStocks()
     }
@@ -387,11 +406,16 @@ struct StockListView: View {
                     portfolioService.acceleratedProfitsList = result.0
                     portfolioService.acceleratedProfitsTotal = result.1
                     portfolioService.acceleratedProfitsStockList = result.2
+                    portfolioService.acceleratedProfitsTotalBasis = result.3
+                    portfolioService.acceleratedProfitsDividendList = result.4
                     portfolioService.acceleratedProfitsTotalPercent = result.5
                 case .breakthroughStocks:
                     portfolioService.breakthroughList = result.0
                     portfolioService.breakthroughTotal = result.1
                     portfolioService.breakthroughStockList = result.2
+                    portfolioService.breakthroughTotalBasis = result.3
+                    portfolioService.breakthroughDividendList = result.4
+
                     portfolioService.breakthroughTotalPercent = result.5
                 case .eliteDividendPayers:
                     portfolioService.eliteDividendPayersList = result.0
@@ -404,16 +428,22 @@ struct StockListView: View {
                     portfolioService.growthInvestorList = result.0
                     portfolioService.growthInvestorTotal = result.1
                     portfolioService.growthInvestorStockList = result.2
+                    portfolioService.growthInvestorTotalBasis = result.3
+                    portfolioService.growthInvestorDividendList = result.4
                     portfolioService.growthInvestorTotalPercent = result.5
                 case .buy:
                     portfolioService.buyList = result.0
                     portfolioService.buyTotal = result.1
                     portfolioService.buyStockList = result.2
+                    portfolioService.buyTotalBasis = result.3
+                    portfolioService.buyDividendList = result.4
                     portfolioService.buyTotalPercent = result.5
                 case .sell:
                     portfolioService.sellList = result.0
                     portfolioService.sellTotal = result.1
                     portfolioService.sellStockList = result.2
+                    portfolioService.sellTotalBasis = result.3
+                    portfolioService.sellDividendList = result.4
                     portfolioService.sellTotalPercent = result.5
                 }
                 portfolioService.showingProgress = false

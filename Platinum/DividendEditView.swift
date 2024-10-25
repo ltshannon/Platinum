@@ -61,7 +61,7 @@ struct DividendEditView: View {
     func deleteDividend() {
         Task {
             await portfolioService.deleteDividend(listName: key.rawValue, symbol: dividendDisplayData.symbol, dividendDisplayData: dividendDisplayData)
-            await portfolioService.getDividend(listName: key.rawValue, symbol: dividendDisplayData.symbol)
+            await portfolioService.getDividend(key: key, symbol: dividendDisplayData.symbol)
             await MainActor.run {
                 dismiss()
             }
@@ -71,7 +71,7 @@ struct DividendEditView: View {
     func updateDividend() {
         Task {
             await portfolioService.updateDividend(listName: key.rawValue, symbol: dividendDisplayData.symbol, dividendDisplayData: dividendDisplayData, dividendDate: dividendDate, dividendAmount: dividendAmount)
-            await portfolioService.getDividend(listName: key.rawValue, symbol: dividendDisplayData.symbol)
+            await portfolioService.getDividend(key: key, symbol: dividendDisplayData.symbol)
             await MainActor.run {
                 dismiss()
             }

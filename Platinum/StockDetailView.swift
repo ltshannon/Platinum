@@ -127,14 +127,14 @@ struct StockDetailView: View {
                 Text("Delete")
             }
             .buttonStyle(.borderedProminent)
-            if key == .eliteDividendPayers {
+//            if key == .eliteDividendPayers {
                 Button {
                     showingPopover = true
                 } label: {
                     Text("Add Dividend")
                 }
                 .buttonStyle(.borderedProminent)
-            }
+//            }
             Button {
                 dismiss()
             } label: {
@@ -185,7 +185,7 @@ struct StockDetailView: View {
     
     func updateDividendValues() {
         Task {
-            await portfolioService.getDividend(listName: key.rawValue, symbol: symbol)
+            await portfolioService.getDividend(key: key, symbol: symbol)
         }
     }
     
@@ -197,10 +197,14 @@ struct StockDetailView: View {
                 portfolioService.acceleratedProfitsList = result.0
                 portfolioService.acceleratedProfitsTotal = result.1
                 portfolioService.acceleratedProfitsStockList = result.2
+                portfolioService.acceleratedProfitsTotalBasis = result.3
+                portfolioService.acceleratedProfitsDividendList = result.4
             case .breakthroughStocks:
                 portfolioService.breakthroughList = result.0
                 portfolioService.breakthroughTotal = result.1
                 portfolioService.breakthroughStockList = result.2
+                portfolioService.breakthroughTotalBasis = result.3
+                portfolioService.breakthroughDividendList = result.4
             case .eliteDividendPayers:
                 portfolioService.eliteDividendPayersList = result.0
                 portfolioService.eliteDividendPayersTotal = result.1
@@ -211,14 +215,20 @@ struct StockDetailView: View {
                 portfolioService.growthInvestorList = result.0
                 portfolioService.growthInvestorTotal = result.1
                 portfolioService.growthInvestorStockList = result.2
+                portfolioService.growthInvestorTotalBasis = result.3
+                portfolioService.growthInvestorDividendList = result.4
             case .buy:
                 portfolioService.buyList = result.0
                 portfolioService.buyTotal = result.1
                 portfolioService.buyStockList = result.2
+                portfolioService.buyTotalBasis = result.3
+                portfolioService.buyDividendList = result.4
             case .sell:
                 portfolioService.sellList = result.0
                 portfolioService.sellTotal = result.1
                 portfolioService.sellStockList = result.2
+                portfolioService.sellTotalBasis = result.3
+                portfolioService.sellDividendList = result.4
             }
         }
     }

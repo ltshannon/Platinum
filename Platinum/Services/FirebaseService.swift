@@ -129,7 +129,6 @@ class FirebaseService: ObservableObject {
         for item in stockList {
             do {
                 id = item.id ?? "n/a"
-                debugPrint("id: \(id) listName: \(listName.rawValue)")
                 let querySnapshot = try await database.collection("users").document(user.uid).collection(listName.rawValue).document(id).getDocument()
                 if querySnapshot.exists {
                     var data = try querySnapshot.data(as: PortfolioItem.self)
@@ -141,13 +140,13 @@ class FirebaseService: ObservableObject {
                     } else {
                         data.symbol = data.id ?? "n/a"
                     }
-                    if listName == .eliteDividendPayers {
+//                    if listName == .eliteDividendPayers {
                         let querySnapshot2 = try await database.collection("users").document(user.uid).collection(listName.rawValue).document(id).collection("dividend").document("dividend").getDocument()
                         if querySnapshot2.exists {
                             let data2 = try querySnapshot2.data(as: DividendData.self)
                             //                        debugPrint("👾", "dividend: \(data2)")
                             data.dividend = data2.values
-                        }
+//                        }
                     }
                     portfolioItems.append(data)
                 }

@@ -39,11 +39,13 @@ class PortfolioService: ObservableObject {
     @Published var acceleratedProfitsTotalPercent: Decimal = 0
     @Published var acceleratedProfitsTotalBasis: Decimal = 0
     @Published var acceleratedProfitsStockList: [String] = []
+    @Published var acceleratedProfitsDividendList: [DividendDisplayData] = []
     @Published var breakthroughList: [ItemData] = []
     @Published var breakthroughTotal: Decimal = 0
     @Published var breakthroughTotalPercent: Decimal = 0
     @Published var breakthroughTotalBasis: Decimal = 0
     @Published var breakthroughStockList: [String] = []
+    @Published var breakthroughDividendList: [DividendDisplayData] = []
     @Published var eliteDividendPayersList: [ItemData] = []
     @Published var eliteDividendPayersTotal: Decimal = 0
     @Published var eliteDividendPayersTotalPercent: Decimal = 0
@@ -55,16 +57,19 @@ class PortfolioService: ObservableObject {
     @Published var growthInvestorTotalPercent: Decimal = 0
     @Published var growthInvestorTotalBasis: Decimal = 0
     @Published var growthInvestorStockList: [String] = []
+    @Published var growthInvestorDividendList: [DividendDisplayData] = []
     @Published var buyList: [ItemData] = []
     @Published var buyTotal: Decimal = 0
     @Published var buyTotalBasis: Decimal = 0
     @Published var buyTotalPercent: Decimal = 0
     @Published var buyStockList: [String] = []
+    @Published var buyDividendList: [DividendDisplayData] = []
     @Published var sellList: [ItemData] = []
     @Published var sellTotal: Decimal = 0
     @Published var sellTotalPercent: Decimal = 0
     @Published var sellTotalBasis: Decimal = 0
     @Published var sellStockList: [String] = []
+    @Published var sellDividendList: [DividendDisplayData] = []
     @Published var stockList: [String] = []
     @Published var showingProgress = false
     
@@ -81,11 +86,13 @@ class PortfolioService: ObservableObject {
             acceleratedProfitsTotal = await result1.1
             acceleratedProfitsStockList = await result1.2
             acceleratedProfitsTotalBasis = await result1.3
+            acceleratedProfitsDividendList = await result1.4
             acceleratedProfitsTotalPercent = await result1.5
             breakthroughList = await result2.0
             breakthroughTotal = await result2.1
             breakthroughStockList = await result2.2
             breakthroughTotalBasis = await result2.3
+            breakthroughDividendList = await result2.4
             breakthroughTotalPercent = await result2.5
             eliteDividendPayersList = await result3.0
             eliteDividendPayersTotal = await result3.1
@@ -97,22 +104,67 @@ class PortfolioService: ObservableObject {
             growthInvestorTotal = await result4.1
             growthInvestorStockList = await result4.2
             growthInvestorTotalBasis = await result4.3
+            growthInvestorDividendList = await result4.4
             growthInvestorTotalPercent = await result4.5
             buyList = await result5.0
             buyTotal = await result5.1
             buyStockList = await result5.2
             buyTotalBasis = await result5.3
+            buyDividendList = await result5.4
             buyTotalPercent = await result5.5
             sellList = await result6.0
             sellTotal = await result6.1
             sellStockList = await result6.2
             sellTotalBasis = await result6.3
+            sellDividendList = await result6.4
             sellTotalPercent = await result6.5
             showingProgress = false
         }
     }
     
+    func buildAStockList(listName: PortfolioType) async -> [StockData] {
+        
+        let value = await getStockList(listName: listName)
+        let string: String = value.joined(separator: ",")
+        let stocks = await networkService.fetch(tickers: string)
+        return stocks
+    }
+    
+    func buildAllStocksList() async -> [StockData] {
+        let firebaseService = FirebaseService.shared
+        
+        var list: [String] = []
+        for item in PortfolioType.allCases {
+            let value = await getStockList(listName: item)
+            list += value
+        }
+        let string: String = list.joined(separator: ",")
+        let stocks = await networkService.fetch(tickers: string)
+        return stocks
+    }
+    
+    func getStockList(listName: PortfolioType) async -> [String] {
+        let firebaseService = FirebaseService.shared
+        var list: [String] = []
+        
+        let stockList = await firebaseService.getStockList(listName: listName.rawValue)
+
+        for item in stockList {
+            if let value = item.symbol {
+                if list.contains(value) == false {
+                    list.append(value)
+                }
+            } else {
+                if let value = item.id, value.count <= 4 {
+                    list.append(value)
+                }
+            }
+        }
+        return list
+    }
+    
     func getPortfolio(listName: PortfolioType) async -> ([ItemData], Decimal, [String], Decimal, [DividendDisplayData], Decimal) {
+//        let a = await buildAllStocksList()
         let settingService = SettingsService.shared
         let stockList = await firebaseService.getStockList(listName: listName.rawValue)
         let data = await firebaseService.getPortfolioList(stockList: stockList, listName: listName, showSold: settingService.isShowSoldStocks)
@@ -166,7 +218,7 @@ class PortfolioService: ObservableObject {
                     items[index].gainLose = gainLose
                     total += gainLose
                     totalBasis += items[index].basis * Decimal(items[index].quantity)
-                    if listName == .eliteDividendPayers, let dividends = items[index].dividend {
+                    if let dividends = items[index].dividend {
                         let _ = dividends.map {
                             dividendList.append(buildDividendList(array: $0, symbol: item.id))
                         }
@@ -228,9 +280,9 @@ class PortfolioService: ObservableObject {
         await firebaseService.addDividend(listName: listName, symbol: symbol, dividendDate: dividendDate, dividendAmount: dividendAmount)
     }
     
-    func getDividend(listName: String, symbol: String) async {
+    func getDividend(key: PortfolioType, symbol: String) async {
         
-        let array = await firebaseService.getDividend(listName: listName, symbol: symbol)
+        let array = await firebaseService.getDividend(listName: key.rawValue, symbol: symbol)
         var data: [DividendDisplayData] = []
         let _ = array.map {
             let value = $0.split(separator: ",")
@@ -241,11 +293,28 @@ class PortfolioService: ObservableObject {
                 }
             }
         }
-        var temp = eliteDividendPayersDividendList.filter { $0.symbol != symbol }
+        
+        var dividendDisplayData: [DividendDisplayData] = []
+        switch key {
+        case .acceleratedProfits:
+            dividendDisplayData = acceleratedProfitsDividendList
+        case .breakthroughStocks:
+            dividendDisplayData = breakthroughDividendList
+        case .eliteDividendPayers:
+            dividendDisplayData = eliteDividendPayersDividendList
+        case .growthInvestor:
+            dividendDisplayData = growthInvestorDividendList
+        case .buy:
+            dividendDisplayData = buyDividendList
+        case .sell:
+            dividendDisplayData = sellDividendList
+        }
+        
+        var temp = dividendDisplayData.filter { $0.symbol != symbol }
         temp += data
         temp = temp.sorted { $0.symbol < $1.symbol }
         await MainActor.run {
-            self.eliteDividendPayersDividendList = temp
+            dividendDisplayData = temp
         }
     }
 

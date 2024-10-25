@@ -26,6 +26,7 @@ struct PlatinumApp: App {
     @StateObject var platinumGrowthModel = PlatinumGrowthModel.shared
     @StateObject var appNavigationState = AppNavigationState()
     @StateObject var settingsService = SettingsService.shared
+    @StateObject var searchService = SearchService.shared
     
     var body: some Scene {
         WindowGroup {
@@ -37,6 +38,7 @@ struct PlatinumApp: App {
                 .environmentObject(platinumGrowthModel)
                 .environmentObject(appNavigationState)
                 .environmentObject(settingsService)
+                .environmentObject(searchService)
         }
     }
 }

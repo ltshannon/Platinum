@@ -10,6 +10,7 @@ import SwiftUI
 struct GrowClubPortfolioView: View {
     @EnvironmentObject var appNavigationState: AppNavigationState
     @EnvironmentObject var settingsService: SettingsService
+    @EnvironmentObject var searchService: SearchService
     @State var segment: GrowthClubPortfolio = .accelerated
     
     var body: some View {
@@ -37,6 +38,7 @@ struct GrowClubPortfolioView: View {
                 }
             }
             .navigationTitle("Platinum Growth")
+            .searchable(text: $searchService.searchText, prompt: "Enter Stock Symbol")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Menu {
