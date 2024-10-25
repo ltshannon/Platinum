@@ -33,7 +33,6 @@
 		B178406C2C41EC0200B55B96 /* ModelPortfolioView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B178406B2C41EC0200B55B96 /* ModelPortfolioView.swift */; };
 		B18432A12C4C726600781E04 /* DividendEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B18432A02C4C726600781E04 /* DividendEditView.swift */; };
 		B18432A32C4CB03F00781E04 /* DividendCreateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B18432A22C4CB03F00781E04 /* DividendCreateView.swift */; };
-		B18432A72C4EE09600781E04 /* AppNavigationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B18432A62C4EE09600781E04 /* AppNavigationState.swift */; };
 		B18432A92C587DA200781E04 /* GrowClubPortfolioView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B18432A82C587DA200781E04 /* GrowClubPortfolioView.swift */; };
 		B18432AB2C59DFC300781E04 /* ManageSymbolsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B18432AA2C59DFC300781E04 /* ManageSymbolsView.swift */; };
 		B18432AD2C61540F00781E04 /* AddSymbolView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B18432AC2C61540F00781E04 /* AddSymbolView.swift */; };
@@ -74,7 +73,6 @@
 		B178406B2C41EC0200B55B96 /* ModelPortfolioView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelPortfolioView.swift; sourceTree = "<group>"; };
 		B18432A02C4C726600781E04 /* DividendEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendEditView.swift; sourceTree = "<group>"; };
 		B18432A22C4CB03F00781E04 /* DividendCreateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendCreateView.swift; sourceTree = "<group>"; };
-		B18432A62C4EE09600781E04 /* AppNavigationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppNavigationState.swift; sourceTree = "<group>"; };
 		B18432A82C587DA200781E04 /* GrowClubPortfolioView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GrowClubPortfolioView.swift; sourceTree = "<group>"; };
 		B18432AA2C59DFC300781E04 /* ManageSymbolsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageSymbolsView.swift; sourceTree = "<group>"; };
 		B18432AC2C61540F00781E04 /* AddSymbolView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddSymbolView.swift; sourceTree = "<group>"; };
@@ -119,7 +117,6 @@
 				B136CA402C24FC3400A23278 /* PortfolioService.swift */,
 				B151C64A2CC9A054003329BA /* SettingService.swift */,
 				B18B321B2C3CCD11006661E0 /* PlatinumGrowthModel.swift */,
-				B18432A62C4EE09600781E04 /* AppNavigationState.swift */,
 				B151C64C2CCB0DAC003329BA /* SearchService.swift */,
 			);
 			path = Services;
@@ -287,7 +284,6 @@
 				B136CA042C1E692700A23278 /* StockListView.swift in Sources */,
 				B136CA1A2C23841B00A23278 /* Authentication.swift in Sources */,
 				B136CA242C23A83D00A23278 /* ProfileView.swift in Sources */,
-				B18432A72C4EE09600781E04 /* AppNavigationState.swift in Sources */,
 				B18432AB2C59DFC300781E04 /* ManageSymbolsView.swift in Sources */,
 				B14694AA2C3A086100B3C8FE /* AllocationAndModelView.swift in Sources */,
 				B178406C2C41EC0200B55B96 /* ModelPortfolioView.swift in Sources */,
