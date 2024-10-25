@@ -25,6 +25,7 @@
 		B136CA4B2C2917AA00A23278 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = B136CA4A2C2917AA00A23278 /* FirebaseAuth */; };
 		B136CA4D2C2917AA00A23278 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = B136CA4C2C2917AA00A23278 /* FirebaseFirestore */; };
 		B136CA4F2C2917AA00A23278 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = B136CA4E2C2917AA00A23278 /* FirebaseStorage */; };
+		B13E6EC82CCC65A900FEAAF4 /* AppNavigationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B13E6EC72CCC65A900FEAAF4 /* AppNavigationState.swift */; };
 		B14694AA2C3A086100B3C8FE /* AllocationAndModelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14694A92C3A086100B3C8FE /* AllocationAndModelView.swift */; };
 		B14694AD2C3A08F700B3C8FE /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = B14694AC2C3A08F700B3C8FE /* SwiftSoup */; };
 		B151C64B2CC9A054003329BA /* SettingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B151C64A2CC9A054003329BA /* SettingService.swift */; };
@@ -66,6 +67,7 @@
 		B136CA402C24FC3400A23278 /* PortfolioService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortfolioService.swift; sourceTree = "<group>"; };
 		B136CA422C28F2B100A23278 /* TotalsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TotalsView.swift; sourceTree = "<group>"; };
 		B136CA502C2A377700A23278 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		B13E6EC72CCC65A900FEAAF4 /* AppNavigationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppNavigationState.swift; sourceTree = "<group>"; };
 		B14694A92C3A086100B3C8FE /* AllocationAndModelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllocationAndModelView.swift; sourceTree = "<group>"; };
 		B151C64A2CC9A054003329BA /* SettingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingService.swift; sourceTree = "<group>"; };
 		B151C64C2CCB0DAC003329BA /* SearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchService.swift; sourceTree = "<group>"; };
@@ -118,6 +120,7 @@
 				B151C64A2CC9A054003329BA /* SettingService.swift */,
 				B18B321B2C3CCD11006661E0 /* PlatinumGrowthModel.swift */,
 				B151C64C2CCB0DAC003329BA /* SearchService.swift */,
+				B13E6EC72CCC65A900FEAAF4 /* AppNavigationState.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -281,6 +284,7 @@
 				B1FD8AD92C1A5C89000D0F37 /* PlatinumApp.swift in Sources */,
 				B18432A92C587DA200781E04 /* GrowClubPortfolioView.swift in Sources */,
 				B178406A2C40AC9B00B55B96 /* AllocationToolView.swift in Sources */,
+				B13E6EC82CCC65A900FEAAF4 /* AppNavigationState.swift in Sources */,
 				B136CA042C1E692700A23278 /* StockListView.swift in Sources */,
 				B136CA1A2C23841B00A23278 /* Authentication.swift in Sources */,
 				B136CA242C23A83D00A23278 /* ProfileView.swift in Sources */,
