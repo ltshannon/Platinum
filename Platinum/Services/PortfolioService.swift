@@ -220,7 +220,9 @@ class PortfolioService: ObservableObject {
                     totalBasis += items[index].basis * Decimal(items[index].quantity)
                     if let dividends = items[index].dividend {
                         let _ = dividends.map {
-                            dividendList.append(buildDividendList(array: $0, symbol: item.id))
+                            let result = buildDividendList(array: $0, symbol: item.id)
+                            dividendList.append(result.0)
+                            items[index].gainLose += result.1
                         }
                     }
                 }
@@ -327,15 +329,17 @@ class PortfolioService: ObservableObject {
         await firebaseService.updateDividend(listName: listName, symbol: symbol, dividendDisplayData: dividendDisplayData, dividendAmount: dividendAmount, dividendDate: dividendDate)
     }
     
-    func buildDividendList(array: String, symbol: String) -> DividendDisplayData {
+    func buildDividendList(array: String, symbol: String) -> (DividendDisplayData, Decimal) {
         var data = DividendDisplayData(date: "", price: 0)
+        var total: Decimal = 0
         let value = array.split(separator: ",")
         if value.count == 2 {
             if let dec = Decimal(string: String(value[1])) {
                 data = DividendDisplayData(symbol: symbol, date: String(value[0]), price: dec)
+                total += dec
             }
         }
-        return data
+        return (data, total)
     }
     
     func computeDividendTotal(list: [DividendDisplayData]) -> Decimal {
