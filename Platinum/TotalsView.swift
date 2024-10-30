@@ -132,6 +132,7 @@ struct TotalsView: View {
                 pullToRefresh()
             }
             .onAppear {
+                refreshStocks()
                 acceleratedProfitsTotal = portfolioService.acceleratedProfitsTotal
                 breakthroughTotal = portfolioService.breakthroughTotal
                 eliteDividendPayersTotal = portfolioService.eliteDividendPayersTotal

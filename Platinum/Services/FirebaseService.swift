@@ -119,7 +119,7 @@ class FirebaseService: ObservableObject {
         }
     }
     
-    func getPortfolioList(stockList: [StockItem], listName: PortfolioType, showSold: Bool) async -> [PortfolioItem] {
+    func getPortfolioList(stockList: [StockItem], listName: PortfolioType, displayStockState: DisplayStockState) async -> [PortfolioItem] {
         var id: String = ""
         guard let user = Auth.auth().currentUser else {
             return []
@@ -132,7 +132,10 @@ class FirebaseService: ObservableObject {
                 let querySnapshot = try await database.collection("users").document(user.uid).collection(listName.rawValue).document(id).getDocument()
                 if querySnapshot.exists {
                     var data = try querySnapshot.data(as: PortfolioItem.self)
-                    if let _ = data.isSold, showSold == false {
+                    if displayStockState == .showSoldStocks && data.isSold == nil {
+                        continue
+                    }
+                    if let _ = data.isSold, displayStockState == .showActiveStocks {
                         continue
                     }
                     if let stock = data.symbol {

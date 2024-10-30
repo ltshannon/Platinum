@@ -158,7 +158,7 @@ struct StockDetailView: View {
         }
         .alert("Update stock as sold", isPresented: $showSoldAlert) {
             TextField("Price", text: $soldPrice)
-                .keyboardType(.numberPad)
+                .keyboardType(.decimalPad)
             Button("OK", action: sold)
             Button("Cancel", role: .cancel) { }
          } message: {

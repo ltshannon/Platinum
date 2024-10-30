@@ -11,6 +11,7 @@ struct GrowClubPortfolioView: View {
     @EnvironmentObject var appNavigationState: AppNavigationState
     @EnvironmentObject var settingsService: SettingsService
     @EnvironmentObject var searchService: SearchService
+    @EnvironmentObject var portfolioService: PortfolioService
     @State var segment: GrowthClubPortfolio = .accelerated
     
     var body: some View {
@@ -40,12 +41,29 @@ struct GrowClubPortfolioView: View {
             .navigationTitle("Platinum Growth")
             .searchable(text: $searchService.searchText, prompt: "Enter Stock Symbol")
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    if portfolioService.showingProgress {
+                        ProgressView("Loading...")
+                            .progressViewStyle(CircularProgressViewStyle(tint: Color.blue))
+                            .padding(.trailing, 30)
+                    }
+                }
                 ToolbarItem(placement: .primaryAction) {
                     Menu {
                         Button {
-                            settingsService.toggleShowSoldStocks()
+                            settingsService.setShowActiveStocks()
                         } label: {
-                            Label("Show Sold Stocks", systemImage: settingsService.isShowSoldStocks ? "checkmark.circle" : "circle")
+                            Label("Show Active Stocks", systemImage: settingsService.displayStocks == .showActiveStocks ? "checkmark.circle" : "circle")
+                        }
+                        Button {
+                            settingsService.setShowAllStocks()
+                        } label: {
+                            Label("Show All Stocks", systemImage: settingsService.displayStocks == .showAllStocks ? "checkmark.circle" : "circle")
+                        }
+                        Button {
+                            settingsService.setShowSoldStocks()
+                        } label: {
+                            Label("Show Sold Stocks", systemImage: settingsService.displayStocks == .showSoldStocks ? "checkmark.circle" : "circle")
                         }
                         Button {
                             

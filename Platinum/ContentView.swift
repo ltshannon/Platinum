@@ -47,7 +47,7 @@ struct ContentView: View {
                 Task {
 //                    await firebaseService.createUser(token: userAuth.fcmToken)
                     firebaseService.getUser()
-                    portfolioService.loadPortfolios()
+//                    portfolioService.loadPortfolios()
                 }
                 showSignIn = false
             }

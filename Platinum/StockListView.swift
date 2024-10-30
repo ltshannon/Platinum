@@ -50,11 +50,11 @@ struct StockListView: View {
 
     var body: some View {
         ScrollView {
-            if portfolioService.showingProgress {
-                ProgressView("Loading...")
-                    .progressViewStyle(CircularProgressViewStyle(tint: Color.blue))
-                    .padding(.trailing, 30)
-            }
+//            if portfolioService.showingProgress {
+//                ProgressView("Loading...")
+//                    .progressViewStyle(CircularProgressViewStyle(tint: Color.blue))
+//                    .padding(.trailing, 30)
+//            }
             LazyVGrid(columns: columns, alignment: .leading) {
                 Group {
                     Text("Sym")
@@ -184,6 +184,7 @@ struct StockListView: View {
         }
         Spacer()
         .onAppear {
+            refreshStocks()
             switch key {
             case .acceleratedProfits:
                 items = portfolioService.acceleratedProfitsList
@@ -211,8 +212,8 @@ struct StockListView: View {
                 totalDividend = portfolioService.computeDividendTotal(list: dividendList)
             }
         }
-        .onChange(of: settingsService.isShowSoldStocks) { oldValue, newValue in
-            pullToRefresh()
+        .onChange(of: settingsService.displayStocks) { oldValue, newValue in
+            refreshStocks()
         }
         .onReceive(portfolioService.$eliteDividendPayersList) { list in
             if key == .eliteDividendPayers {

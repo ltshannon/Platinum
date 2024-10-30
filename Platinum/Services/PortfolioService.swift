@@ -131,8 +131,7 @@ class PortfolioService: ObservableObject {
     }
     
     func buildAllStocksList() async -> [StockData] {
-        let firebaseService = FirebaseService.shared
-        
+
         var list: [String] = []
         for item in PortfolioType.allCases {
             let value = await getStockList(listName: item)
@@ -167,7 +166,7 @@ class PortfolioService: ObservableObject {
 //        let a = await buildAllStocksList()
         let settingService = SettingsService.shared
         let stockList = await firebaseService.getStockList(listName: listName.rawValue)
-        let data = await firebaseService.getPortfolioList(stockList: stockList, listName: listName, showSold: settingService.isShowSoldStocks)
+        let data = await firebaseService.getPortfolioList(stockList: stockList, listName: listName, displayStockState: settingService.displayStocks)
         var items: [ItemData] = []
         for item in data {
             var value = ""
